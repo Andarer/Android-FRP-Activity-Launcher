@@ -12,20 +12,105 @@
             box-sizing: border-box;
         }
 
-        body {
-            background: #f4f6fc;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Helvetica, sans-serif;
-            padding: 20px 16px 48px;
-            color: #101214;
+        /* ===== ТЕМЫ ===== */
+        :root {
+            --bg-body: #f4f6fc;
+            --text-primary: #101214;
+            --card-bg: #ffffff;
+            --card-border: rgba(0,0,0,0.04);
+            --filter-bg: #ffffffcc;
+            --filter-border: rgba(0,0,0,0.05);
+            --btn-bg: #f0f2f8;
+            --btn-text: #2c3e50;
+            --btn-active-bg: #1f2b3c;
+            --btn-active-text: white;
+            --link-bg: #f9fafd;
+            --link-border: #e9edf4;
+            --link-text: #1a4c6e;
+            --link-hover-bg: #ffffff;
+            --link-hover-border: #cbd5e1;
+            --link-hover-text: #0f3b54;
+            --heading-color: #0b2b3b;
+            --heading-border: #eef2ff;
+            --badge-bg: #ffecb3;
+            --badge-text: #b45f06;
+            --warning-bg: rgba(0,0,0,0.03);
+            --warning-border: #ff9800;
+            --warning-text: #5a5f6b;
+            --footer-text: #6c7a8e;
+            --footer-border: #e2e8f0;
         }
 
-        /* контейнер */
+        /* Тёмная тема */
+        [data-theme="dark"] {
+            --bg-body: #0f1722;
+            --text-primary: #eef2ff;
+            --card-bg: #19212e;
+            --card-border: #2d3748;
+            --filter-bg: #0f172acc;
+            --filter-border: #2d3e5a;
+            --btn-bg: #1f2a3e;
+            --btn-text: #cbd5e6;
+            --btn-active-bg: #3b4e6b;
+            --btn-active-text: white;
+            --link-bg: #1e293b;
+            --link-border: #334155;
+            --link-text: #bbd7fb;
+            --link-hover-bg: #2d3a4f;
+            --link-hover-border: #4a5b7a;
+            --link-hover-text: #ffffff;
+            --heading-color: #deeaff;
+            --heading-border: #2d3e5a;
+            --badge-bg: #1f2a36;
+            --badge-text: #fbcf8c;
+            --warning-bg: #1f2a36;
+            --warning-border: #ff9800;
+            --warning-text: #fbcf8c;
+            --footer-text: #8b9ab0;
+            --footer-border: #2d3e5a;
+        }
+
+        /* Светлая тема (явно) */
+        [data-theme="light"] {
+            --bg-body: #f4f6fc;
+            --text-primary: #101214;
+            --card-bg: #ffffff;
+            --card-border: rgba(0,0,0,0.04);
+            --filter-bg: #ffffffcc;
+            --filter-border: rgba(0,0,0,0.05);
+            --btn-bg: #f0f2f8;
+            --btn-text: #2c3e50;
+            --btn-active-bg: #1f2b3c;
+            --btn-active-text: white;
+            --link-bg: #f9fafd;
+            --link-border: #e9edf4;
+            --link-text: #1a4c6e;
+            --link-hover-bg: #ffffff;
+            --link-hover-border: #cbd5e1;
+            --link-hover-text: #0f3b54;
+            --heading-color: #0b2b3b;
+            --heading-border: #eef2ff;
+            --badge-bg: #ffecb3;
+            --badge-text: #b45f06;
+            --warning-bg: rgba(0,0,0,0.03);
+            --warning-text: #5a5f6b;
+            --footer-text: #6c7a8e;
+            --footer-border: #e2e8f0;
+        }
+
+        body {
+            background: var(--bg-body);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Helvetica, sans-serif;
+            padding: 20px 16px 48px;
+            color: var(--text-primary);
+            transition: background 0.2s, color 0.2s;
+        }
+
         .container {
             max-width: 720px;
             margin: 0 auto;
         }
 
-        /* заголовок + шапка */
         .hero {
             text-align: center;
             margin-bottom: 28px;
@@ -44,8 +129,8 @@
 
         .badge {
             display: inline-block;
-            background: #ffecb3;
-            color: #b45f06;
+            background: var(--badge-bg);
+            color: var(--badge-text);
             font-size: 0.7rem;
             font-weight: 600;
             padding: 4px 12px;
@@ -56,34 +141,62 @@
         }
 
         .warning-note {
-            background: rgba(0,0,0,0.03);
-            border-left: 3px solid #ff9800;
+            background: var(--warning-bg);
+            border-left: 3px solid var(--warning-border);
             padding: 10px 16px;
             border-radius: 18px;
             font-size: 0.75rem;
-            color: #5a5f6b;
+            color: var(--warning-text);
             text-align: center;
             width: fit-content;
             margin: 0 auto 12px auto;
             backdrop-filter: blur(2px);
         }
 
-        /* навигация фильтр (только CSS, выпадающий список — чисто html + css?) 
-           Чтобы полностью убрать JS – но фильтр селектор изначально был через js, если нужен "без js", 
-           переделаем на чисто CSS: радиокнопки + видимость секций.
-           Я сделаю elegant радиокнопки категорий — никакого JS, только CSS! Сохраняем улучшения.
-        */
+        /* ===== ПЕРЕКЛЮЧАТЕЛЬ ТЕМ ===== */
+        .theme-switch {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .theme-btn {
+            background: var(--btn-bg);
+            border: 1px solid var(--filter-border);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--btn-text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .theme-btn.active {
+            background: var(--btn-active-bg);
+            color: var(--btn-active-text);
+            border-color: transparent;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        /* ===== ФИЛЬТР (CSS ONLY — ИСПРАВЛЕН) ===== */
+        /* Скрытые радиокнопки глобальные */
+        .filter-radio-hidden {
+            display: none;
+        }
+
+        /* Группа фильтров */
         .filter-radio-group {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             justify-content: center;
-            background: #ffffffcc;
+            background: var(--filter-bg);
             backdrop-filter: blur(8px);
             padding: 12px 12px;
             border-radius: 56px;
             margin-bottom: 28px;
-            border: 0.5px solid rgba(0,0,0,0.05);
+            border: 0.5px solid var(--filter-border);
             box-shadow: 0 4px 12px rgba(0,0,0,0.02);
             position: sticky;
             top: 12px;
@@ -91,12 +204,12 @@
         }
 
         .filter-radio-group label {
-            background: #f0f2f8;
+            background: var(--btn-bg);
             padding: 6px 16px;
             border-radius: 40px;
             font-size: 0.75rem;
             font-weight: 500;
-            color: #2c3e50;
+            color: var(--btn-text);
             transition: all 0.2s ease;
             cursor: pointer;
             user-select: none;
@@ -104,117 +217,101 @@
             border: 1px solid transparent;
         }
 
-        .filter-radio-group input {
-            display: none;
-        }
-
-        /* активные состояния */
+        /* Активное состояние через соседний селектор */
         .filter-radio-group input:checked + label {
-            background: #1f2b3c;
-            color: white;
+            background: var(--btn-active-bg);
+            color: var(--btn-active-text);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-color: #2c3e5c;
+            border-color: transparent;
         }
 
-        /* секции по умолчанию все видимы */
+        /* Все секции по умолчанию видны */
         section {
             display: block;
-            background: #ffffff;
+            background: var(--card-bg);
             border-radius: 28px;
             padding: 18px 20px;
             margin-bottom: 24px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.02);
             transition: all 0.2s;
-            border: 0.5px solid rgba(0,0,0,0.04);
+            border: 0.5px solid var(--card-border);
         }
 
-        /* CSS фильтр: скрываем все секции, кроме соответствующей выбранной */
-        #filter-all:checked ~ .container section {
-            display: block;
-        }
-        #filter-general:checked ~ .container section:not(#general_android),
-        #filter-lock:checked ~ .container section:not(#lock_screen_&_security),
-        #filter-device:checked ~ .container section:not(#device_settings),
-        #filter-third:checked ~ .container section:not(#third_party_apps),
-        #filter-google:checked ~ .container section:not(#google_apps),
-        #filter-samsung:checked ~ .container section:not(#samsung),
-        #filter-motorola:checked ~ .container section:not(#motorola),
-        #filter-xiaomi:checked ~ .container section:not(#xiaomi),
-        #filter-oneplus:checked ~ .container section:not(#oneplus),
-        #filter-oppo:checked ~ .container section:not(#oppo),
-        #filter-infinix:checked ~ .container section:not(#infinix),
-        #filter-huawei:checked ~ .container section:not(#huawei),
-        #filter-lg:checked ~ .container section:not(#lg),
-        #filter-sony:checked ~ .container section:not(#sony),
-        #filter-htc:checked ~ .container section:not(#htc),
-        #filter-nokia:checked ~ .container section:not(#nokia),
-        #filter-asus:checked ~ .container section:not(#asus),
-        #filter-realme:checked ~ .container section:not(#realme),
-        #filter-pixel:checked ~ .container section:not(#google_pixel) {
-            display: none;
-        }
+        /* CSS фильтр */
+        #filter-all:checked ~ .container section { display: block; }
+        #filter-general:checked ~ .container section:not(#general_android) { display: none; }
+        #filter-lock:checked ~ .container section:not(#lock_screen_&_security) { display: none; }
+        #filter-device:checked ~ .container section:not(#device_settings) { display: none; }
+        #filter-third:checked ~ .container section:not(#third_party_apps) { display: none; }
+        #filter-google:checked ~ .container section:not(#google_apps) { display: none; }
+        #filter-samsung:checked ~ .container section:not(#samsung) { display: none; }
+        #filter-motorola:checked ~ .container section:not(#motorola) { display: none; }
+        #filter-xiaomi:checked ~ .container section:not(#xiaomi) { display: none; }
+        #filter-oneplus:checked ~ .container section:not(#oneplus) { display: none; }
+        #filter-oppo:checked ~ .container section:not(#oppo) { display: none; }
+        #filter-infinix:checked ~ .container section:not(#infinix) { display: none; }
+        #filter-huawei:checked ~ .container section:not(#huawei) { display: none; }
+        #filter-lg:checked ~ .container section:not(#lg) { display: none; }
+        #filter-sony:checked ~ .container section:not(#sony) { display: none; }
+        #filter-htc:checked ~ .container section:not(#htc) { display: none; }
+        #filter-nokia:checked ~ .container section:not(#nokia) { display: none; }
+        #filter-asus:checked ~ .container section:not(#asus) { display: none; }
+        #filter-realme:checked ~ .container section:not(#realme) { display: none; }
+        #filter-pixel:checked ~ .container section:not(#google_pixel) { display: none; }
 
-        /* стили секций + заголовки */
+        /* стили секций */
         h3 {
             font-size: 1.35rem;
             font-weight: 620;
             margin-bottom: 16px;
             padding-bottom: 8px;
-            border-bottom: 2px solid #eef2ff;
+            border-bottom: 2px solid var(--heading-border);
             display: flex;
             align-items: center;
             gap: 8px;
-            color: #0b2b3b;
+            color: var(--heading-color);
         }
-
         h3::before {
             content: "⚡";
             font-size: 1.2rem;
             opacity: 0.8;
         }
 
-        /* улучшенные списки ссылок */
         ul {
             list-style: none;
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
-
         li {
             margin: 0;
             line-height: 1.4;
         }
-
         a {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: #f9fafd;
+            background: var(--link-bg);
             padding: 8px 14px;
             border-radius: 44px;
             text-decoration: none;
-            color: #1a4c6e;
+            color: var(--link-text);
             font-weight: 500;
             font-size: 0.85rem;
             transition: all 0.2s ease;
-            border: 1px solid #e9edf4;
+            border: 1px solid var(--link-border);
             backdrop-filter: blur(2px);
         }
-
         a:hover {
-            background: #ffffff;
-            border-color: #cbd5e1;
+            background: var(--link-hover-bg);
+            border-color: var(--link-hover-border);
             transform: translateX(4px);
             box-shadow: 0 6px 12px rgba(0,0,0,0.03);
-            color: #0f3b54;
+            color: var(--link-hover-text);
         }
-
         a:active {
             transform: scale(0.98);
         }
-
-        /* иконка дополнительная для красоты */
         a::before {
             content: "📱";
             font-size: 1rem;
@@ -222,147 +319,85 @@
             width: 22px;
             display: inline-block;
         }
-
-        /* разные иконки для ссылок телефона, камеры */
         a[href^="tel:"]::before { content: "📞"; }
         a[href*="camera"]::before { content: "📸"; }
         a[href*="calculator"]::before { content: "🧮"; }
         a[href*="Settings"]::before { content: "⚙️"; }
 
-        /* footer */
         .footer-note {
             text-align: center;
             font-size: 0.7rem;
-            color: #6c7a8e;
+            color: var(--footer-text);
             margin-top: 36px;
             padding-top: 12px;
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid var(--footer-border);
         }
 
-        /* адаптивность мобильная */
         @media (max-width: 560px) {
-            body {
-                padding: 16px 12px 40px;
-            }
-            .filter-radio-group {
-                border-radius: 48px;
-                gap: 6px;
-                padding: 8px 10px;
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            .filter-radio-group label {
-                padding: 5px 12px;
-                font-size: 0.7rem;
-                white-space: nowrap;
-            }
-            a {
-                font-size: 0.8rem;
-                padding: 6px 12px;
-            }
-            section {
-                padding: 14px 16px;
-                margin-bottom: 18px;
-            }
-            h3 {
-                font-size: 1.2rem;
-            }
+            body { padding: 16px 12px 40px; }
+            .filter-radio-group { border-radius: 48px; gap: 6px; padding: 8px 10px; flex-wrap: wrap; }
+            .filter-radio-group label { padding: 5px 12px; font-size: 0.7rem; white-space: nowrap; }
+            a { font-size: 0.8rem; padding: 6px 12px; }
+            section { padding: 14px 16px; margin-bottom: 18px; }
+            h3 { font-size: 1.2rem; }
+            .theme-btn { padding: 4px 12px; font-size: 0.65rem; }
         }
 
-        /* тёмная тема / авто-адаптация */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background: #0f1722;
-                color: #eef2ff;
-            }
-            section {
-                background: #19212e;
-                border-color: #2d3748;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            }
-            a {
-                background: #1e293b;
-                border-color: #334155;
-                color: #bbd7fb;
-            }
-            a:hover {
-                background: #2d3a4f;
-                color: #ffffff;
-            }
-            .filter-radio-group {
-                background: #0f172acc;
-                backdrop-filter: blur(12px);
-                border-color: #2d3e5a;
-            }
-            .filter-radio-group label {
-                background: #1f2a3e;
-                color: #cbd5e6;
-            }
-            .filter-radio-group input:checked + label {
-                background: #3b4e6b;
-                color: white;
-            }
-            .badge, .warning-note {
-                background: #1f2a36;
-                color: #fbcf8c;
-            }
-            h3 {
-                border-bottom-color: #2d3e5a;
-                color: #deeaff;
-            }
-        }
-
-        /* отступы + мелкий фикс для секций с амперсандом */
-        #lock_screen_&_security {
-            display: block;
-        }
-        /* плавное появление ссылок */
+        /* фикс для секции с амперсандом */
+        #lock_screen_&_security { display: block; }
     </style>
 </head>
 <body>
-    <!-- Вся фильтрация работает только на CSS (без единой строчки JS) -->
-    <input type="radio" name="frpFilter" id="filter-all" checked hidden>
-    <input type="radio" name="frpFilter" id="filter-general" hidden>
-    <input type="radio" name="frpFilter" id="filter-lock" hidden>
-    <input type="radio" name="frpFilter" id="filter-device" hidden>
-    <input type="radio" name="frpFilter" id="filter-third" hidden>
-    <input type="radio" name="frpFilter" id="filter-google" hidden>
-    <input type="radio" name="frpFilter" id="filter-samsung" hidden>
-    <input type="radio" name="frpFilter" id="filter-motorola" hidden>
-    <input type="radio" name="frpFilter" id="filter-xiaomi" hidden>
-    <input type="radio" name="frpFilter" id="filter-oneplus" hidden>
-    <input type="radio" name="frpFilter" id="filter-oppo" hidden>
-    <input type="radio" name="frpFilter" id="filter-infinix" hidden>
-    <input type="radio" name="frpFilter" id="filter-huawei" hidden>
-    <input type="radio" name="frpFilter" id="filter-lg" hidden>
-    <input type="radio" name="frpFilter" id="filter-sony" hidden>
-    <input type="radio" name="frpFilter" id="filter-htc" hidden>
-    <input type="radio" name="frpFilter" id="filter-nokia" hidden>
-    <input type="radio" name="frpFilter" id="filter-asus" hidden>
-    <input type="radio" name="frpFilter" id="filter-realme" hidden>
-    <input type="radio" name="frpFilter" id="filter-pixel" hidden>
+    <!-- ГЛОБАЛЬНЫЕ РАДИОКНОПКИ ДЛЯ ФИЛЬТРА (скрыты) -->
+    <input type="radio" name="frpFilter" id="filter-all" class="filter-radio-hidden" checked>
+    <input type="radio" name="frpFilter" id="filter-general" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-lock" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-device" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-third" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-google" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-samsung" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-motorola" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-xiaomi" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-oneplus" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-oppo" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-infinix" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-huawei" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-lg" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-sony" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-htc" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-nokia" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-asus" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-realme" class="filter-radio-hidden">
+    <input type="radio" name="frpFilter" id="filter-pixel" class="filter-radio-hidden">
+
+    <!-- КНОПКИ ПЕРЕКЛЮЧЕНИЯ ТЕМ (без JS не обойтись, это пользовательское улучшение, фильтр остался CSS) -->
+    <div class="theme-switch">
+        <button class="theme-btn" data-theme="system">🌓 Системная</button>
+        <button class="theme-btn" data-theme="light">☀️ Светлая</button>
+        <button class="theme-btn" data-theme="dark">🌙 Тёмная</button>
+    </div>
 
     <div class="filter-radio-group" role="radiogroup" aria-label="Фильтр категорий">
-        <input type="radio" name="frpFilter" id="radio-all" checked><label for="radio-all" onclick="document.getElementById('filter-all').checked=true;">🏁 Все</label>
-        <input type="radio" name="frpFilter" id="radio-general"><label for="radio-general" onclick="document.getElementById('filter-general').checked=true;">📱 Общие</label>
-        <input type="radio" name="frpFilter" id="radio-lock"><label for="radio-lock" onclick="document.getElementById('filter-lock').checked=true;">🔒 Безопасность</label>
-        <input type="radio" name="frpFilter" id="radio-device"><label for="radio-device" onclick="document.getElementById('filter-device').checked=true;">📟 Настройки</label>
-        <input type="radio" name="frpFilter" id="radio-third"><label for="radio-third" onclick="document.getElementById('filter-third').checked=true;">🧩 Сторонние</label>
-        <input type="radio" name="frpFilter" id="radio-google"><label for="radio-google" onclick="document.getElementById('filter-google').checked=true;">◍ Google</label>
-        <input type="radio" name="frpFilter" id="radio-samsung"><label for="radio-samsung" onclick="document.getElementById('filter-samsung').checked=true;">⭐ Samsung</label>
-        <input type="radio" name="frpFilter" id="radio-motorola"><label for="radio-motorola" onclick="document.getElementById('filter-motorola').checked=true;">🟢 Motorola</label>
-        <input type="radio" name="frpFilter" id="radio-xiaomi"><label for="radio-xiaomi" onclick="document.getElementById('filter-xiaomi').checked=true;">🍚 Xiaomi</label>
-        <input type="radio" name="frpFilter" id="radio-oneplus"><label for="radio-oneplus" onclick="document.getElementById('filter-oneplus').checked=true;">⚡ OnePlus</label>
-        <input type="radio" name="frpFilter" id="radio-oppo"><label for="radio-oppo" onclick="document.getElementById('filter-oppo').checked=true;">🟩 OPPO</label>
-        <input type="radio" name="frpFilter" id="radio-infinix"><label for="radio-infinix" onclick="document.getElementById('filter-infinix').checked=true;">📲 Infinix</label>
-        <input type="radio" name="frpFilter" id="radio-huawei"><label for="radio-huawei" onclick="document.getElementById('filter-huawei').checked=true;">🌸 Huawei</label>
-        <input type="radio" name="frpFilter" id="radio-lg"><label for="radio-lg" onclick="document.getElementById('filter-lg').checked=true;">📺 LG</label>
-        <input type="radio" name="frpFilter" id="radio-sony"><label for="radio-sony" onclick="document.getElementById('filter-sony').checked=true;">🎵 Sony</label>
-        <input type="radio" name="frpFilter" id="radio-htc"><label for="radio-htc" onclick="document.getElementById('filter-htc').checked=true;">🌀 HTC</label>
-        <input type="radio" name="frpFilter" id="radio-nokia"><label for="radio-nokia" onclick="document.getElementById('filter-nokia').checked=true;">📞 Nokia</label>
-        <input type="radio" name="frpFilter" id="radio-asus"><label for="radio-asus" onclick="document.getElementById('filter-asus').checked=true;">🖥️ Asus</label>
-        <input type="radio" name="frpFilter" id="radio-realme"><label for="radio-realme" onclick="document.getElementById('filter-realme').checked=true;">🔮 Realme</label>
-        <input type="radio" name="frpFilter" id="radio-pixel"><label for="radio-pixel" onclick="document.getElementById('filter-pixel').checked=true;">📷 Pixel</label>
+        <input type="radio" name="frpFilterUI" id="radio-all" checked><label for="radio-all" onclick="document.getElementById('filter-all').checked=true;">🏁 Все</label>
+        <input type="radio" name="frpFilterUI" id="radio-general"><label for="radio-general" onclick="document.getElementById('filter-general').checked=true;">📱 Общие</label>
+        <input type="radio" name="frpFilterUI" id="radio-lock"><label for="radio-lock" onclick="document.getElementById('filter-lock').checked=true;">🔒 Безопасность</label>
+        <input type="radio" name="frpFilterUI" id="radio-device"><label for="radio-device" onclick="document.getElementById('filter-device').checked=true;">📟 Настройки</label>
+        <input type="radio" name="frpFilterUI" id="radio-third"><label for="radio-third" onclick="document.getElementById('filter-third').checked=true;">🧩 Сторонние</label>
+        <input type="radio" name="frpFilterUI" id="radio-google"><label for="radio-google" onclick="document.getElementById('filter-google').checked=true;">◍ Google</label>
+        <input type="radio" name="frpFilterUI" id="radio-samsung"><label for="radio-samsung" onclick="document.getElementById('filter-samsung').checked=true;">⭐ Samsung</label>
+        <input type="radio" name="frpFilterUI" id="radio-motorola"><label for="radio-motorola" onclick="document.getElementById('filter-motorola').checked=true;">🟢 Motorola</label>
+        <input type="radio" name="frpFilterUI" id="radio-xiaomi"><label for="radio-xiaomi" onclick="document.getElementById('filter-xiaomi').checked=true;">🍚 Xiaomi</label>
+        <input type="radio" name="frpFilterUI" id="radio-oneplus"><label for="radio-oneplus" onclick="document.getElementById('filter-oneplus').checked=true;">⚡ OnePlus</label>
+        <input type="radio" name="frpFilterUI" id="radio-oppo"><label for="radio-oppo" onclick="document.getElementById('filter-oppo').checked=true;">🟩 OPPO</label>
+        <input type="radio" name="frpFilterUI" id="radio-infinix"><label for="radio-infinix" onclick="document.getElementById('filter-infinix').checked=true;">📲 Infinix</label>
+        <input type="radio" name="frpFilterUI" id="radio-huawei"><label for="radio-huawei" onclick="document.getElementById('filter-huawei').checked=true;">🌸 Huawei</label>
+        <input type="radio" name="frpFilterUI" id="radio-lg"><label for="radio-lg" onclick="document.getElementById('filter-lg').checked=true;">📺 LG</label>
+        <input type="radio" name="frpFilterUI" id="radio-sony"><label for="radio-sony" onclick="document.getElementById('filter-sony').checked=true;">🎵 Sony</label>
+        <input type="radio" name="frpFilterUI" id="radio-htc"><label for="radio-htc" onclick="document.getElementById('filter-htc').checked=true;">🌀 HTC</label>
+        <input type="radio" name="frpFilterUI" id="radio-nokia"><label for="radio-nokia" onclick="document.getElementById('filter-nokia').checked=true;">📞 Nokia</label>
+        <input type="radio" name="frpFilterUI" id="radio-asus"><label for="radio-asus" onclick="document.getElementById('filter-asus').checked=true;">🖥️ Asus</label>
+        <input type="radio" name="frpFilterUI" id="radio-realme"><label for="radio-realme" onclick="document.getElementById('filter-realme').checked=true;">🔮 Realme</label>
+        <input type="radio" name="frpFilterUI" id="radio-pixel"><label for="radio-pixel" onclick="document.getElementById('filter-pixel').checked=true;">📷 Pixel</label>
     </div>
 
     <div class="container">
@@ -372,7 +407,6 @@
             <div class="warning-note">🧪 ТЕСТОВЫЙ РЕЖИМ · только для совместимых устройств</div>
         </div>
 
-        <!-- General Android -->
         <section id="general_android">
             <h3>Общие инструменты Android</h3>
             <ul>
@@ -395,7 +429,6 @@
             </ul>
         </section>
 
-        <!-- Lock Screen & Security -->
         <section id="lock_screen_&amp;_security">
             <h3>Экран блокировки и безопасность</h3>
             <ul>
@@ -440,13 +473,7 @@
             </ul>
         </section>
 
-        <!-- остальные секции (Google, Samsung, Xiaomi и т.д) в компактном виде, но адаптивно -->
-        <!-- Google Apps (сокращённо но со всеми смыслами) -->
-        <section id="google_apps">
-            <h3>Google сервисы</h3>
-            <ul><li><a href="intent://com.android.chrome/#Intent;scheme=android-app;end">Chrome</a></li><li><a href="intent://com.google.android.gm/#Intent;scheme=android-app;end">Gmail</a></li><li><a href="intent://com.google.android.apps.maps/#Intent;scheme=android-app;end">Карты</a></li><li><a href="intent://com.google.android.youtube/#Intent;scheme=android-app;end">YouTube</a></li><li><a href="intent://com.google.android.apps.photos/#Intent;scheme=android-app;end">Фото</a></li><li><a href="intent://com.google.android.keep/#Intent;scheme=android-app;end">Keep</a></li><li><a href="intent://com.google.android.calendar/#Intent;scheme=android-app;end">Календарь</a></li><li><a href="intent://com.android.vending/#Intent;scheme=android-app;end">Play Store</a></li><li><a href="intent://com.google.android.apps.docs/#Intent;scheme=android-app;end">Drive</a></li><li><a href="intent://com.google.android.apps.tachyon/#Intent;scheme=android-app;end">Meet</a></li></ul>
-        </section>
-
+        <section id="google_apps"><h3>Google сервисы</h3><ul><li><a href="intent://com.android.chrome/#Intent;scheme=android-app;end">Chrome</a></li><li><a href="intent://com.google.android.gm/#Intent;scheme=android-app;end">Gmail</a></li><li><a href="intent://com.google.android.apps.maps/#Intent;scheme=android-app;end">Карты</a></li><li><a href="intent://com.google.android.youtube/#Intent;scheme=android-app;end">YouTube</a></li><li><a href="intent://com.google.android.apps.photos/#Intent;scheme=android-app;end">Фото</a></li><li><a href="intent://com.google.android.keep/#Intent;scheme=android-app;end">Keep</a></li><li><a href="intent://com.google.android.calendar/#Intent;scheme=android-app;end">Календарь</a></li><li><a href="intent://com.android.vending/#Intent;scheme=android-app;end">Play Store</a></li><li><a href="intent://com.google.android.apps.docs/#Intent;scheme=android-app;end">Drive</a></li><li><a href="intent://com.google.android.apps.tachyon/#Intent;scheme=android-app;end">Meet</a></li></ul></section>
         <section id="samsung"><h3>Samsung</h3><ul><li><a href="intent://com.sec.android.app.myfiles/#Intent;scheme=android-app;end">Мои файлы</a></li><li><a href="intent://com.samsung.android.knox.securefolder/#Intent;scheme=android-app;end">Secure Folder</a></li><li><a href="intent://com.sec.android.hiddenmenu/#Intent;scheme=android-app;end">Сервисное меню</a></li><li><a href="intent://com.samsung.android.samsungpass/#Intent;scheme=android-app;end">Samsung Pass</a></li><li><a href="intent://com.sec.android.app.sbrowser/#Intent;scheme=android-app;end">Браузер</a></li><li><a href="intent://com.samsung.android.lool/#Intent;scheme=android-app;end">Device Care</a></li></ul></section>
         <section id="motorola"><h3>Motorola</h3><ul><li><a href="intent://com.motorola.motosecure/#Intent;scheme=android-app;end">Moto Secure</a></li><li><a href="intent://com.motorola.actions/#Intent;scheme=android-app;end">Moto Actions</a></li><li><a href="intent://com.motorola.camera/#Intent;scheme=android-app;end">Камера Moto</a></li><li><a href="intent://com.motorola.fingerprintsetup/#Intent;scheme=android-app;end">Сканер отпечатков</a></li></ul></section>
         <section id="xiaomi"><h3>Xiaomi</h3><ul><li><a href="intent://com.mi.android.globalFileexplorer/#Intent;scheme=android-app;end">Mi Файлы</a></li><li><a href="intent://com.miui.securitycenter/#Intent;scheme=android-app;end">Центр безопасности</a></li><li><a href="intent://com.xiaomi.midrop/#Intent;scheme=android-app;end">ShareMe</a></li><li><a href="intent://com.miui.powerkeeper/#Intent;scheme=android-app;end">Оптимизация батареи</a></li></ul></section>
@@ -467,5 +494,104 @@
             Только для легального тестирования и отладки.
         </div>
     </div>
+
+    <script>
+        (function() {
+            // переключение тем: system / light / dark
+            const themeBtns = document.querySelectorAll('.theme-btn');
+            const root = document.documentElement;
+
+            function setTheme(theme) {
+                if (theme === 'system') {
+                    root.removeAttribute('data-theme');
+                    // удаляем явную тему, используем prefers-color-scheme
+                    // но у нас в CSS нет системной по умолчанию? есть корневые переменные без атрибута = светлая.
+                    // Чтобы честно следовать системной: слушаем медиа и синхронизируем атрибут data-theme не задаём.
+                    // Лучше: при system - слушаем медиа и выставляем data-theme в 'dark' или 'light'
+                    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+                    const applySystem = (e) => {
+                        if (document.body.getAttribute('data-theme-mode') === 'system') {
+                            if (e.matches) {
+                                root.setAttribute('data-theme', 'dark');
+                            } else {
+                                root.setAttribute('data-theme', 'light');
+                            }
+                        }
+                    };
+                    if (!window._systemListener) {
+                        window._systemListener = (e) => applySystem(e);
+                        mq.addEventListener('change', window._systemListener);
+                    }
+                    document.body.setAttribute('data-theme-mode', 'system');
+                    applySystem(mq);
+                } else if (theme === 'light') {
+                    document.body.setAttribute('data-theme-mode', 'light');
+                    root.setAttribute('data-theme', 'light');
+                } else if (theme === 'dark') {
+                    document.body.setAttribute('data-theme-mode', 'dark');
+                    root.setAttribute('data-theme', 'dark');
+                }
+                // обновить активные кнопки
+                themeBtns.forEach(btn => {
+                    const btnTheme = btn.getAttribute('data-theme');
+                    if ((theme === 'system' && btnTheme === 'system') ||
+                        (theme === 'light' && btnTheme === 'light') ||
+                        (theme === 'dark' && btnTheme === 'dark')) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            // начальная установка: смотрим, была ли сохранена тема? можно по localStorage
+            let savedTheme = localStorage.getItem('frp_theme');
+            if (!savedTheme) savedTheme = 'system';
+            setTheme(savedTheme);
+
+            themeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const theme = btn.getAttribute('data-theme');
+                    localStorage.setItem('frp_theme', theme);
+                    setTheme(theme);
+                });
+            });
+
+            // дополнительно: при клике на лейблы фильтров синхронизируем скрытые радиокнопки (уже сделано через onclick)
+            // также при загрузке синхронизируем активный фильтр с UI (чтобы отображалось правильно)
+            const activeFilterId = document.querySelector('input[name="frpFilter"]:checked')?.id;
+            if (activeFilterId) {
+                const correspondingUIRadio = document.querySelector(`.filter-radio-group input[id^="radio-"]`); 
+                // пробежимся и установим checked для UI радио
+                const mapping = {
+                    'filter-all': 'radio-all',
+                    'filter-general': 'radio-general',
+                    'filter-lock': 'radio-lock',
+                    'filter-device': 'radio-device',
+                    'filter-third': 'radio-third',
+                    'filter-google': 'radio-google',
+                    'filter-samsung': 'radio-samsung',
+                    'filter-motorola': 'radio-motorola',
+                    'filter-xiaomi': 'radio-xiaomi',
+                    'filter-oneplus': 'radio-oneplus',
+                    'filter-oppo': 'radio-oppo',
+                    'filter-infinix': 'radio-infinix',
+                    'filter-huawei': 'radio-huawei',
+                    'filter-lg': 'radio-lg',
+                    'filter-sony': 'radio-sony',
+                    'filter-htc': 'radio-htc',
+                    'filter-nokia': 'radio-nokia',
+                    'filter-asus': 'radio-asus',
+                    'filter-realme': 'radio-realme',
+                    'filter-pixel': 'radio-pixel'
+                };
+                const radioId = mapping[activeFilterId];
+                if (radioId) {
+                    const radioEl = document.getElementById(radioId);
+                    if (radioEl) radioEl.checked = true;
+                }
+            }
+        })();
+    </script>
 </body>
 </html>
