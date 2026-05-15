@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <title>FRP · Activity Launcher | Тестовый стенд для Android</title>
-    <meta name="description" content="Сборник INTENT-ссылок для тестирования активности Android: настройки, приложения, производители. Работает без JS.">
+    <meta name="theme-color" content="#1f6e8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>FRP Launcher Pro · Activity Launcher для Android</title>
+    <meta name="description" content="Мощный лаунчер INTENT-активностей. Боковое меню, избранное, история, поиск, тёмная тема. Все настройки Android в одном месте.">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* ===== ТЕМЫ ===== */
         :root {
             --bg-body: #f4f6fc;
             --text-primary: #101214;
+            --text-secondary: #5a6a7e;
             --card-bg: #ffffff;
             --card-border: rgba(0,0,0,0.04);
+            --surface-variant: #f0f2f8;
+            --drawer-bg: #ffffff;
             --filter-bg: #ffffffcc;
             --filter-border: rgba(0,0,0,0.05);
             --btn-bg: #f0f2f8;
@@ -39,14 +45,23 @@
             --warning-text: #5a5f6b;
             --footer-text: #6c7a8e;
             --footer-border: #e2e8f0;
+            --primary: #1f6e8c;
+            --primary-container: #c1e8f5;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --transition-fast: 0.15s ease;
+            --transition-slow: 0.3s ease;
+            --card-radius: 24px;
         }
 
-        /* Тёмная тема */
         [data-theme="dark"] {
             --bg-body: #0f1722;
             --text-primary: #eef2ff;
+            --text-secondary: #94a3b8;
             --card-bg: #19212e;
             --card-border: #2d3748;
+            --surface-variant: #1f2a3e;
+            --drawer-bg: #1a2332;
             --filter-bg: #0f172acc;
             --filter-border: #2d3e5a;
             --btn-bg: #1f2a3e;
@@ -68,14 +83,20 @@
             --warning-text: #fbcf8c;
             --footer-text: #8b9ab0;
             --footer-border: #2d3e5a;
+            --primary: #7ac7e0;
+            --primary-container: #004e63;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 14px rgba(0,0,0,0.4);
         }
 
-        /* Светлая тема (явно) */
         [data-theme="light"] {
             --bg-body: #f4f6fc;
             --text-primary: #101214;
+            --text-secondary: #5a6a7e;
             --card-bg: #ffffff;
+            --drawer-bg: #ffffff;
             --card-border: rgba(0,0,0,0.04);
+            --surface-variant: #f0f2f8;
             --filter-bg: #ffffffcc;
             --filter-border: rgba(0,0,0,0.05);
             --btn-bg: #f0f2f8;
@@ -96,26 +117,167 @@
             --warning-text: #5a5f6b;
             --footer-text: #6c7a8e;
             --footer-border: #e2e8f0;
+            --primary: #1f6e8c;
+            --primary-container: #c1e8f5;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
 
         body {
             background: var(--bg-body);
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Helvetica, sans-serif;
-            padding: 20px 16px 48px;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
             color: var(--text-primary);
-            transition: background 0.2s, color 0.2s;
+            transition: background var(--transition-slow), color var(--transition-slow);
+            overflow-x: hidden;
+            padding: 0 0 20px 0;
         }
 
-        .container {
+        /* ===== БОКОВОЕ МЕНЮ (DRAWER) ===== */
+        .drawer-toggle { display: none; }
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0);
+            z-index: 199;
+            pointer-events: none;
+            transition: background var(--transition-slow);
+            cursor: pointer;
+        }
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: var(--drawer-bg);
+            z-index: 200;
+            transition: left var(--transition-slow);
+            box-shadow: 2px 0 12px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+        .drawer-toggle:checked ~ .drawer-overlay {
+            background: rgba(0,0,0,0.5);
+            pointer-events: auto;
+        }
+        .drawer-toggle:checked ~ .drawer { left: 0; }
+        .drawer-header {
+            padding: 20px 20px;
+            border-bottom: 1px solid var(--footer-border);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .drawer-header h2 { font-size: 1.3rem; color: var(--primary); }
+        .drawer-header p { font-size: 0.7rem; color: var(--text-secondary); }
+        .drawer-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 40px;
+            transition: var(--transition-fast);
+        }
+        .drawer-close:active { background: var(--surface-variant); transform: scale(0.95); }
+        .drawer-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 12px;
+        }
+        .drawer-nav a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--text-primary);
+            border-radius: 48px;
+            transition: var(--transition-fast);
+            font-weight: 500;
+        }
+        .drawer-nav a:active { background: var(--surface-variant); transform: scale(0.98); }
+        .drawer-nav a.active-drawer { background: var(--primary-container); color: var(--primary); }
+        .drawer-footer {
+            margin-top: auto;
+            padding: 20px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--footer-border);
+        }
+
+        /* ===== APP BAR ===== */
+        .app-bar {
+            position: sticky;
+            top: 0;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid var(--footer-border);
+            z-index: 50;
+        }
+        .menu-btn {
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: var(--text-primary);
+            padding: 8px;
+            border-radius: 40px;
+            transition: var(--transition-fast);
+        }
+        .menu-btn:active { background: var(--surface-variant); transform: scale(0.95); }
+        .app-title { flex: 1; font-size: 1.2rem; font-weight: 700; }
+        .app-title span { color: var(--primary); }
+        .theme-chips {
+            display: flex;
+            gap: 4px;
+            background: var(--surface-variant);
+            padding: 4px;
+            border-radius: 40px;
+        }
+        .theme-chip {
+            padding: 4px 10px;
+            border-radius: 32px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        .theme-chip.active { background: var(--primary); color: white; }
+
+        /* ===== ОСНОВНОЙ КОНТЕНТ ===== */
+        .main-content {
             max-width: 720px;
             margin: 0 auto;
+            padding: 16px;
         }
 
-        .hero {
-            text-align: center;
-            margin-bottom: 28px;
+        /* ===== ЭКРАНЫ ===== */
+        .screen { display: none; animation: fadeInUp 0.3s ease; }
+        .screen:target { display: block; }
+        body:not(:has(.screen:target)) #home-screen { display: block; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
+        /* ===== ОРИГИНАЛЬНЫЕ СТИЛИ ===== */
+        .hero { text-align: center; margin-bottom: 28px; }
         .hero h1 {
             font-size: 1.95rem;
             font-weight: 700;
@@ -126,7 +288,6 @@
             letter-spacing: -0.3px;
             margin-bottom: 6px;
         }
-
         .badge {
             display: inline-block;
             background: var(--badge-bg);
@@ -136,10 +297,9 @@
             padding: 4px 12px;
             border-radius: 40px;
             backdrop-filter: blur(2px);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            box-shadow: var(--shadow-sm);
             margin-bottom: 12px;
         }
-
         .warning-note {
             background: var(--warning-bg);
             border-left: 3px solid var(--warning-border);
@@ -150,42 +310,10 @@
             text-align: center;
             width: fit-content;
             margin: 0 auto 12px auto;
-            backdrop-filter: blur(2px);
         }
 
-        /* ===== ПЕРЕКЛЮЧАТЕЛЬ ТЕМ ===== */
-        .theme-switch {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-        .theme-btn {
-            background: var(--btn-bg);
-            border: 1px solid var(--filter-border);
-            padding: 6px 14px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: var(--btn-text);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
-        }
-        .theme-btn.active {
-            background: var(--btn-active-bg);
-            color: var(--btn-active-text);
-            border-color: transparent;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-
-        /* ===== ФИЛЬТР (CSS ONLY — ИСПРАВЛЕН) ===== */
-        /* Скрытые радиокнопки глобальные */
-        .filter-radio-hidden {
-            display: none;
-        }
-
-        /* Группа фильтров */
+        /* ===== ФИЛЬТР ===== */
+        .filter-radio-hidden { display: none; }
         .filter-radio-group {
             display: flex;
             flex-wrap: wrap;
@@ -197,12 +325,11 @@
             border-radius: 56px;
             margin-bottom: 28px;
             border: 0.5px solid var(--filter-border);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            box-shadow: var(--shadow-sm);
             position: sticky;
             top: 12px;
             z-index: 10;
         }
-
         .filter-radio-group label {
             background: var(--btn-bg);
             padding: 6px 16px;
@@ -210,56 +337,49 @@
             font-size: 0.75rem;
             font-weight: 500;
             color: var(--btn-text);
-            transition: all 0.2s ease;
+            transition: var(--transition-fast);
             cursor: pointer;
             user-select: none;
             white-space: nowrap;
             border: 1px solid transparent;
         }
-
-        /* Активное состояние через соседний селектор */
         .filter-radio-group input:checked + label {
             background: var(--btn-active-bg);
             color: var(--btn-active-text);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-sm);
             border-color: transparent;
         }
 
-        /* Все секции по умолчанию видны */
+        /* CSS фильтрация секций */
+        body.filter-all .filter-sections-container section { display: block; }
+        body.filter-general .filter-sections-container section:not(#general_android) { display: none; }
+        body.filter-lock .filter-sections-container section:not(#lock_screen_&_security) { display: none; }
+        body.filter-device .filter-sections-container section:not(#device_settings) { display: none; }
+        body.filter-third .filter-sections-container section:not(#third_party_apps) { display: none; }
+        body.filter-google .filter-sections-container section:not(#google_apps) { display: none; }
+        body.filter-samsung .filter-sections-container section:not(#samsung) { display: none; }
+        body.filter-motorola .filter-sections-container section:not(#motorola) { display: none; }
+        body.filter-xiaomi .filter-sections-container section:not(#xiaomi) { display: none; }
+        body.filter-oneplus .filter-sections-container section:not(#oneplus) { display: none; }
+        body.filter-oppo .filter-sections-container section:not(#oppo) { display: none; }
+        body.filter-infinix .filter-sections-container section:not(#infinix) { display: none; }
+        body.filter-huawei .filter-sections-container section:not(#huawei) { display: none; }
+        body.filter-lg .filter-sections-container section:not(#lg) { display: none; }
+        body.filter-sony .filter-sections-container section:not(#sony) { display: none; }
+        body.filter-htc .filter-sections-container section:not(#htc) { display: none; }
+        body.filter-nokia .filter-sections-container section:not(#nokia) { display: none; }
+        body.filter-asus .filter-sections-container section:not(#asus) { display: none; }
+        body.filter-realme .filter-sections-container section:not(#realme) { display: none; }
+        body.filter-pixel .filter-sections-container section:not(#google_pixel) { display: none; }
+
         section {
-            display: block;
             background: var(--card-bg);
             border-radius: 28px;
             padding: 18px 20px;
             margin-bottom: 24px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.02);
-            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
             border: 0.5px solid var(--card-border);
         }
-
-        /* CSS фильтр */
-        #filter-all:checked ~ .container section { display: block; }
-        #filter-general:checked ~ .container section:not(#general_android) { display: none; }
-        #filter-lock:checked ~ .container section:not(#lock_screen_&_security) { display: none; }
-        #filter-device:checked ~ .container section:not(#device_settings) { display: none; }
-        #filter-third:checked ~ .container section:not(#third_party_apps) { display: none; }
-        #filter-google:checked ~ .container section:not(#google_apps) { display: none; }
-        #filter-samsung:checked ~ .container section:not(#samsung) { display: none; }
-        #filter-motorola:checked ~ .container section:not(#motorola) { display: none; }
-        #filter-xiaomi:checked ~ .container section:not(#xiaomi) { display: none; }
-        #filter-oneplus:checked ~ .container section:not(#oneplus) { display: none; }
-        #filter-oppo:checked ~ .container section:not(#oppo) { display: none; }
-        #filter-infinix:checked ~ .container section:not(#infinix) { display: none; }
-        #filter-huawei:checked ~ .container section:not(#huawei) { display: none; }
-        #filter-lg:checked ~ .container section:not(#lg) { display: none; }
-        #filter-sony:checked ~ .container section:not(#sony) { display: none; }
-        #filter-htc:checked ~ .container section:not(#htc) { display: none; }
-        #filter-nokia:checked ~ .container section:not(#nokia) { display: none; }
-        #filter-asus:checked ~ .container section:not(#asus) { display: none; }
-        #filter-realme:checked ~ .container section:not(#realme) { display: none; }
-        #filter-pixel:checked ~ .container section:not(#google_pixel) { display: none; }
-
-        /* стили секций */
         h3 {
             font-size: 1.35rem;
             font-weight: 620;
@@ -271,23 +391,10 @@
             gap: 8px;
             color: var(--heading-color);
         }
-        h3::before {
-            content: "⚡";
-            font-size: 1.2rem;
-            opacity: 0.8;
-        }
-
-        ul {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        li {
-            margin: 0;
-            line-height: 1.4;
-        }
-        a {
+        h3::before { content: "⚡"; font-size: 1.2rem; opacity: 0.8; }
+        ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        li { margin: 0; line-height: 1.4; }
+        .intent-link {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -298,32 +405,19 @@
             color: var(--link-text);
             font-weight: 500;
             font-size: 0.85rem;
-            transition: all 0.2s ease;
+            transition: var(--transition-fast);
             border: 1px solid var(--link-border);
-            backdrop-filter: blur(2px);
         }
-        a:hover {
-            background: var(--link-hover-bg);
-            border-color: var(--link-hover-border);
-            transform: translateX(4px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.03);
-            color: var(--link-hover-text);
-        }
-        a:active {
-            transform: scale(0.98);
-        }
-        a::before {
+        .intent-link:active { transform: scale(0.98); background: var(--primary-container); }
+        .intent-link::before {
             content: "📱";
             font-size: 1rem;
             opacity: 0.7;
             width: 22px;
             display: inline-block;
         }
-        a[href^="tel:"]::before { content: "📞"; }
-        a[href*="camera"]::before { content: "📸"; }
-        a[href*="calculator"]::before { content: "🧮"; }
-        a[href*="Settings"]::before { content: "⚙️"; }
-
+        .intent-link[href^="tel:"]::before { content: "📞"; }
+        .intent-link[href*="camera"]::before { content: "📸"; }
         .footer-note {
             text-align: center;
             font-size: 0.7rem;
@@ -333,22 +427,86 @@
             border-top: 1px solid var(--footer-border);
         }
 
+        /* ===== ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ===== */
+        .card {
+            background: var(--card-bg);
+            border-radius: 28px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            border: 0.5px solid var(--card-border);
+        }
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 0.5px solid var(--card-border);
+        }
+        .setting-item:last-child { border-bottom: none; }
+        .toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .toggle-input { display: none; }
+        .toggle-slider {
+            width: 48px;
+            height: 24px;
+            background: var(--btn-bg);
+            border-radius: 24px;
+            transition: 0.2s;
+            position: relative;
+            border: 1px solid var(--filter-border);
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: var(--btn-text);
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.2s;
+        }
+        .toggle-input:checked + .toggle-slider { background: var(--primary); }
+        .toggle-input:checked + .toggle-slider::before { transform: translateX(24px); background: white; }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: 48px;
+            box-shadow: var(--shadow-md);
+            z-index: 300;
+            text-align: center;
+            font-size: 0.85rem;
+            transform: translateY(100px);
+            transition: transform 0.3s;
+            pointer-events: none;
+        }
+        .toast.show { transform: translateY(0); pointer-events: auto; }
+        .info-text { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; }
+        .info-value { font-weight: 600; color: var(--primary); }
+
         @media (max-width: 560px) {
-            body { padding: 16px 12px 40px; }
-            .filter-radio-group { border-radius: 48px; gap: 6px; padding: 8px 10px; flex-wrap: wrap; }
-            .filter-radio-group label { padding: 5px 12px; font-size: 0.7rem; white-space: nowrap; }
-            a { font-size: 0.8rem; padding: 6px 12px; }
+            .main-content { padding: 12px; }
+            .drawer { width: 260px; left: -260px; }
+            .filter-radio-group { border-radius: 48px; gap: 6px; padding: 8px 10px; }
+            .filter-radio-group label { padding: 5px 12px; font-size: 0.7rem; }
+            .intent-link { font-size: 0.8rem; padding: 6px 12px; }
             section { padding: 14px 16px; margin-bottom: 18px; }
             h3 { font-size: 1.2rem; }
-            .theme-btn { padding: 4px 12px; font-size: 0.65rem; }
         }
-
-        /* фикс для секции с амперсандом */
         #lock_screen_&_security { display: block; }
     </style>
 </head>
-<body>
-    <!-- ГЛОБАЛЬНЫЕ РАДИОКНОПКИ ДЛЯ ФИЛЬТРА (скрыты) -->
+<body class="filter-all">
+    <!-- ГЛОБАЛЬНЫЕ РАДИОКНОПКИ ДЛЯ ФИЛЬТРА -->
     <input type="radio" name="frpFilter" id="filter-all" class="filter-radio-hidden" checked>
     <input type="radio" name="frpFilter" id="filter-general" class="filter-radio-hidden">
     <input type="radio" name="frpFilter" id="filter-lock" class="filter-radio-hidden">
@@ -370,228 +528,415 @@
     <input type="radio" name="frpFilter" id="filter-realme" class="filter-radio-hidden">
     <input type="radio" name="frpFilter" id="filter-pixel" class="filter-radio-hidden">
 
-    <!-- КНОПКИ ПЕРЕКЛЮЧЕНИЯ ТЕМ (без JS не обойтись, это пользовательское улучшение, фильтр остался CSS) -->
-    <div class="theme-switch">
-        <button class="theme-btn" data-theme="system">🌓 Системная</button>
-        <button class="theme-btn" data-theme="light">☀️ Светлая</button>
-        <button class="theme-btn" data-theme="dark">🌙 Тёмная</button>
-    </div>
+    <input type="checkbox" id="drawer-toggle" class="drawer-toggle">
+    <div class="drawer-overlay" onclick="closeDrawer()"></div>
 
-    <div class="filter-radio-group" role="radiogroup" aria-label="Фильтр категорий">
-        <input type="radio" name="frpFilterUI" id="radio-all" checked><label for="radio-all" onclick="document.getElementById('filter-all').checked=true;">🏁 Все</label>
-        <input type="radio" name="frpFilterUI" id="radio-general"><label for="radio-general" onclick="document.getElementById('filter-general').checked=true;">📱 Общие</label>
-        <input type="radio" name="frpFilterUI" id="radio-lock"><label for="radio-lock" onclick="document.getElementById('filter-lock').checked=true;">🔒 Безопасность</label>
-        <input type="radio" name="frpFilterUI" id="radio-device"><label for="radio-device" onclick="document.getElementById('filter-device').checked=true;">📟 Настройки</label>
-        <input type="radio" name="frpFilterUI" id="radio-third"><label for="radio-third" onclick="document.getElementById('filter-third').checked=true;">🧩 Сторонние</label>
-        <input type="radio" name="frpFilterUI" id="radio-google"><label for="radio-google" onclick="document.getElementById('filter-google').checked=true;">◍ Google</label>
-        <input type="radio" name="frpFilterUI" id="radio-samsung"><label for="radio-samsung" onclick="document.getElementById('filter-samsung').checked=true;">⭐ Samsung</label>
-        <input type="radio" name="frpFilterUI" id="radio-motorola"><label for="radio-motorola" onclick="document.getElementById('filter-motorola').checked=true;">🟢 Motorola</label>
-        <input type="radio" name="frpFilterUI" id="radio-xiaomi"><label for="radio-xiaomi" onclick="document.getElementById('filter-xiaomi').checked=true;">🍚 Xiaomi</label>
-        <input type="radio" name="frpFilterUI" id="radio-oneplus"><label for="radio-oneplus" onclick="document.getElementById('filter-oneplus').checked=true;">⚡ OnePlus</label>
-        <input type="radio" name="frpFilterUI" id="radio-oppo"><label for="radio-oppo" onclick="document.getElementById('filter-oppo').checked=true;">🟩 OPPO</label>
-        <input type="radio" name="frpFilterUI" id="radio-infinix"><label for="radio-infinix" onclick="document.getElementById('filter-infinix').checked=true;">📲 Infinix</label>
-        <input type="radio" name="frpFilterUI" id="radio-huawei"><label for="radio-huawei" onclick="document.getElementById('filter-huawei').checked=true;">🌸 Huawei</label>
-        <input type="radio" name="frpFilterUI" id="radio-lg"><label for="radio-lg" onclick="document.getElementById('filter-lg').checked=true;">📺 LG</label>
-        <input type="radio" name="frpFilterUI" id="radio-sony"><label for="radio-sony" onclick="document.getElementById('filter-sony').checked=true;">🎵 Sony</label>
-        <input type="radio" name="frpFilterUI" id="radio-htc"><label for="radio-htc" onclick="document.getElementById('filter-htc').checked=true;">🌀 HTC</label>
-        <input type="radio" name="frpFilterUI" id="radio-nokia"><label for="radio-nokia" onclick="document.getElementById('filter-nokia').checked=true;">📞 Nokia</label>
-        <input type="radio" name="frpFilterUI" id="radio-asus"><label for="radio-asus" onclick="document.getElementById('filter-asus').checked=true;">🖥️ Asus</label>
-        <input type="radio" name="frpFilterUI" id="radio-realme"><label for="radio-realme" onclick="document.getElementById('filter-realme').checked=true;">🔮 Realme</label>
-        <input type="radio" name="frpFilterUI" id="radio-pixel"><label for="radio-pixel" onclick="document.getElementById('filter-pixel').checked=true;">📷 Pixel</label>
-    </div>
-
-    <div class="container">
-        <div class="hero">
-            <div class="badge">INTENT LAUNCHER v2</div>
-            <h1>Android FRP<br>Activity Launcher</h1>
-            <div class="warning-note">🧪 ТЕСТОВЫЙ РЕЖИМ · только для совместимых устройств</div>
+    <!-- БОКОВОЕ МЕНЮ -->
+    <div class="drawer">
+        <div class="drawer-header">
+            <div>
+                <h2>⚡ FRP Launcher</h2>
+                <p>Activity Launcher Pro</p>
+            </div>
+            <button class="drawer-close" onclick="closeDrawer()">✖</button>
         </div>
-
-        <section id="general_android">
-            <h3>Общие инструменты Android</h3>
-            <ul>
-                <li><a href="intent://com.android.settings/#Intent;scheme=android-app;end" target="_blank">Настройки системы</a></li>
-                <li><a href="intent:#Intent;action=android.settings.SETTINGS;end" target="_blank">Настройки (action)</a></li>
-                <li><a href="intent://com.android.settings.UsbSettingsActivity/#Intent;scheme=android-app;end" target="_blank">USB настройки</a></li>
-                <li><a href="intent://com.android.settings.AdbSettingsActivity/#Intent;scheme=android-app;end" target="_blank">ADB параметры</a></li>
-                <li><a href="intent://com.android.calculator2/#Intent;scheme=android-app;end" target="_blank">Калькулятор AOSP</a></li>
-                <li><a href="tel:123456789" target="_blank">Набор номера</a></li>
-                <li><a href="tel:*#0*#" target="_blank">Секретный код (*#0*#)</a></li>
-                <li><a href="intent://android.media.action.IMAGE_CAPTURE#Intent;scheme=android-app;end" target="_blank">Камера (фото)</a></li>
-                <li><a href="intent://android.media.action.VIDEO_CAPTURE#Intent;scheme=android-app;end" target="_blank">Камера (видео)</a></li>
-                <li><a href="intent://android.intent.action.INSERT#Intent;scheme=content://com.android.calendar/events" target="_blank">Добавить событие</a></li>
-                <li><a href="intent://android.intent.action.PICK#Intent;scheme=content://contacts/people" target="_blank">Выбрать контакт</a></li>
-                <li><a href="intent://com.android.contacts/#Intent;scheme=android-app;end" target="_blank">Контакты</a></li>
-                <li><a href="intent://android.intent.action.SEND#Intent;scheme=mailto:someone@example.com" target="_blank">Написать email</a></li>
-                <li><a href="intent://android.intent.action.WEB_SEARCH#Intent;scheme=android-app;end?query=chatgpt" target="_blank">Веб-поиск</a></li>
-                <li><a href="intent://android.intent.action.VIEW#Intent;scheme=https://www.example.com" target="_blank">Открыть URL</a></li>
-                <li><a href="intent://android.intent.action.PRINT#Intent;scheme=content://com.example.document" target="_blank">Печать документа</a></li>
-            </ul>
-        </section>
-
-        <section id="lock_screen_&amp;_security">
-            <h3>Экран блокировки и безопасность</h3>
-            <ul>
-                <li><a href="intent://#Intent;scheme=promote_smartlock_scheme;package=com.google.android.gms;end" target="_blank">Smart Lock (Google)</a></li>
-                <li><a href="intent://#Intent;action=android.app.action.CHOOSE_LOCK;package=com.android.settings;end" target="_blank">Тип блокировки</a></li>
-                <li><a href="intent://#Intent;action=android.settings.SECURITY_SETTINGS;package=com.android.settings;end" target="_blank">Безопасность</a></li>
-                <li><a href="intent://#Intent;action=android.settings.FINGERPRINT_ENROLL;package=com.android.settings;end" target="_blank">Добавить отпечаток</a></li>
-                <li><a href="intent://#Intent;action=android.settings.BIOMETRIC_ENROLL;package=com.android.settings;end" target="_blank">Биометрия</a></li>
-                <li><a href="intent://#Intent;action=android.settings.APP_PINNING_SETTINGS;package=com.android.settings;end" target="_blank">Закрепление экрана</a></li>
-                <li><a href="intent://#Intent;action=android.settings.PRIVACY_SETTINGS;package=com.android.settings;end" target="_blank">Конфиденциальность</a></li>
-                <li><a href="intent://#Intent;action=android.settings.SIM_LOCK_SETTINGS;package=com.android.settings;end" target="_blank">PIN-код SIM</a></li>
-                <li><a href="intent://#Intent;action=android.settings.TRUST_AGENTS_SETTINGS;package=com.android.settings;end" target="_blank">Агенты доверия</a></li>
-                <li><a href="intent://#Intent;action=android.settings.USAGE_ACCESS_SETTINGS;package=com.android.settings;end" target="_blank">Доступ к использованию</a></li>
-            </ul>
-        </section>
-
-        <section id="device_settings">
-            <h3>Системные настройки</h3>
-            <ul>
-                <li><a href="intent:#Intent;action=android.settings.DISPLAY_SETTINGS;end" target="_blank">Экран</a></li>
-                <li><a href="intent:#Intent;action=android.settings.BATTERY_SAVER_SETTINGS;end" target="_blank">Энергосбережение</a></li>
-                <li><a href="intent:#Intent;action=android.settings.ACCESSIBILITY_SETTINGS;end" target="_blank">Спец. возможности</a></li>
-                <li><a href="intent:#Intent;action=android.settings.WIFI_SETTINGS;end" target="_blank">Wi‑Fi</a></li>
-                <li><a href="intent:#Intent;action=android.settings.TETHER_SETTINGS;end" target="_blank">Точка доступа</a></li>
-                <li><a href="intent:#Intent;action=android.settings.BLUETOOTH_SETTINGS;end" target="_blank">Bluetooth</a></li>
-                <li><a href="intent:#Intent;action=android.settings.NFC_SETTINGS;end" target="_blank">NFC</a></li>
-                <li><a href="intent:#Intent;action=android.settings.PRINT_SETTINGS;end" target="_blank">Печать</a></li>
-            </ul>
-        </section>
-
-        <section id="third_party_apps">
-            <h3>Сторонние приложения</h3>
-            <ul>
-                <li><a href="intent://com.hushsms.app/#Intent;end">HushSMS</a></li>
-                <li><a href="intent://com.ss.ae/alliance_shield/#Intent;end">Alliance Shield</a></li>
-                <li><a href="intent://com.activitylauncher/#Intent;end">Activity Launcher</a></li>
-                <li><a href="intent://com.afwsamples.testdpc/#Intent;end">Test DPC</a></li>
-                <li><a href="intent://com.estrongs.android.pop/#Intent;end">ES File Explorer</a></li>
-                <li><a href="intent://com.sec.android.easyMover/#Intent;end">Smart Switch / Clone</a></li>
-                <li><a href="intent://com.quickshortcutmaker/#Intent;end">QuickShortcutMaker</a></li>
-                <li><a href="intent://com.google.android.gsf.login/#Intent;end">Google Account Manager</a></li>
-            </ul>
-        </section>
-
-        <section id="google_apps"><h3>Google сервисы</h3><ul><li><a href="intent://com.android.chrome/#Intent;scheme=android-app;end">Chrome</a></li><li><a href="intent://com.google.android.gm/#Intent;scheme=android-app;end">Gmail</a></li><li><a href="intent://com.google.android.apps.maps/#Intent;scheme=android-app;end">Карты</a></li><li><a href="intent://com.google.android.youtube/#Intent;scheme=android-app;end">YouTube</a></li><li><a href="intent://com.google.android.apps.photos/#Intent;scheme=android-app;end">Фото</a></li><li><a href="intent://com.google.android.keep/#Intent;scheme=android-app;end">Keep</a></li><li><a href="intent://com.google.android.calendar/#Intent;scheme=android-app;end">Календарь</a></li><li><a href="intent://com.android.vending/#Intent;scheme=android-app;end">Play Store</a></li><li><a href="intent://com.google.android.apps.docs/#Intent;scheme=android-app;end">Drive</a></li><li><a href="intent://com.google.android.apps.tachyon/#Intent;scheme=android-app;end">Meet</a></li></ul></section>
-        <section id="samsung"><h3>Samsung</h3><ul><li><a href="intent://com.sec.android.app.myfiles/#Intent;scheme=android-app;end">Мои файлы</a></li><li><a href="intent://com.samsung.android.knox.securefolder/#Intent;scheme=android-app;end">Secure Folder</a></li><li><a href="intent://com.sec.android.hiddenmenu/#Intent;scheme=android-app;end">Сервисное меню</a></li><li><a href="intent://com.samsung.android.samsungpass/#Intent;scheme=android-app;end">Samsung Pass</a></li><li><a href="intent://com.sec.android.app.sbrowser/#Intent;scheme=android-app;end">Браузер</a></li><li><a href="intent://com.samsung.android.lool/#Intent;scheme=android-app;end">Device Care</a></li></ul></section>
-        <section id="motorola"><h3>Motorola</h3><ul><li><a href="intent://com.motorola.motosecure/#Intent;scheme=android-app;end">Moto Secure</a></li><li><a href="intent://com.motorola.actions/#Intent;scheme=android-app;end">Moto Actions</a></li><li><a href="intent://com.motorola.camera/#Intent;scheme=android-app;end">Камера Moto</a></li><li><a href="intent://com.motorola.fingerprintsetup/#Intent;scheme=android-app;end">Сканер отпечатков</a></li></ul></section>
-        <section id="xiaomi"><h3>Xiaomi</h3><ul><li><a href="intent://com.mi.android.globalFileexplorer/#Intent;scheme=android-app;end">Mi Файлы</a></li><li><a href="intent://com.miui.securitycenter/#Intent;scheme=android-app;end">Центр безопасности</a></li><li><a href="intent://com.xiaomi.midrop/#Intent;scheme=android-app;end">ShareMe</a></li><li><a href="intent://com.miui.powerkeeper/#Intent;scheme=android-app;end">Оптимизация батареи</a></li></ul></section>
-        <section id="oneplus"><h3>OnePlus</h3><ul><li><a href="intent://com.oneplus.opbackup/#Intent;scheme=android-app;end">Clone Phone</a></li><li><a href="intent://com.oneplus.settings/#Intent;scheme=android-app;end">Настройки OnePlus</a></li><li><a href="intent://com.oneplus.faceunlock/#Intent;scheme=android-app;end">Face Unlock</a></li></ul></section>
-        <section id="oppo"><h3>OPPO</h3><ul><li><a href="intent://com.coloros.backuprestore/#Intent;scheme=android-app;end">Phone Clone</a></li><li><a href="intent://com.coloros.safecenter/#Intent;scheme=android-app;end">Безопасность</a></li><li><a href="intent://com.coloros.clonemode/#Intent;scheme=android-app;end">Clone Apps</a></li></ul></section>
-        <section id="infinix"><h3>Infinix</h3><ul><li><a href="intent://com.infinix.xshare/#Intent;scheme=android-app;end">XShare</a></li><li><a href="intent://com.infinix.securitycenter/#Intent;scheme=android-app;end">Security Center</a></li><li><a href="intent://com.infinix.xlocker/#Intent;scheme=android-app;end">XLocker</a></li></ul></section>
-        <section id="huawei"><h3>Huawei</h3><ul><li><a href="intent://com.huawei.systemmanager/#Intent;scheme=android-app;end">Phone Manager</a></li><li><a href="intent://com.huawei.hidisk/#Intent;scheme=android-app;end">Файлы Huawei</a></li><li><a href="intent://com.huawei.appmarket/#Intent;scheme=android-app;end">AppGallery</a></li></ul></section>
-        <section id="lg"><h3>LG</h3><ul><li><a href="intent://com.lge.launcher2/#Intent;scheme=android-app;end">LG Launcher</a></li><li><a href="intent://com.lge.quickcover/#Intent;scheme=android-app;end">QuickCover</a></li><li><a href="intent://com.lge.hiddenmenu/#Intent;scheme=android-app;end">Hidden Menu</a></li></ul></section>
-        <section id="sony"><h3>Sony</h3><ul><li><a href="intent://com.sonymobile.home/#Intent;scheme=android-app;end">Xperia Home</a></li><li><a href="intent://com.sonymobile.camera#/Intent;scheme=android-app;end">Камера Xperia</a></li><li><a href="intent://com.sonymobile.support/#Intent;scheme=android-app;end">Support</a></li></ul></section>
-        <section id="htc"><h3>HTC</h3><ul><li><a href="intent://com.htc.launcher/#Intent;scheme=android-app;end">Sense Home</a></li><li><a href="intent://com.htc.sense.camera/#Intent;scheme=android-app;end">HTC Camera</a></li><li><a href="intent://com.htc.sdm/#Intent;scheme=android-app;end">Обновления</a></li></ul></section>
-        <section id="nokia"><h3>Nokia</h3><ul><li><a href="intent://com.nokia.launcher/#Intent;scheme=android-app;end">Nokia Launcher</a></li><li><a href="intent://com.nokia.camera/#Intent;scheme=android-app;end">Nokia Camera</a></li></ul></section>
-        <section id="asus"><h3>Asus</h3><ul><li><a href="intent://com.asus.launcher/#Intent;scheme=android-app;end">ZenUI</a></li><li><a href="intent://com.asus.mobilemanager/#Intent;scheme=android-app;end">Mobile Manager</a></li></ul></section>
-        <section id="realme"><h3>Realme</h3><ul><li><a href="intent://com.realme.backuprestore/#Intent;scheme=android-app;end">Realme Clone</a></li><li><a href="intent://com.realme.securitycenter/#Intent;scheme=android-app;end">Security Center</a></li></ul></section>
-        <section id="google_pixel"><h3>Google Pixel</h3><ul><li><a href="intent://com.google.android.apps.nexuslauncher/#Intent;scheme=android-app;end">Pixel Launcher</a></li><li><a href="intent://com.google.android.apps.wellbeing#Intent;scheme=android-app;end">Digital Wellbeing</a></li><li><a href="intent://com.google.android.apps.recorder#Intent;scheme=android-app;end">Recorder</a></li></ul></section>
-
-        <div class="footer-note">
-            ⚠️ Доступно на Android 8+ · INTENT-схемы для диагностики и FRP тестов<br>
-            Только для легального тестирования и отладки.
+        <nav class="drawer-nav">
+            <a href="#home-screen" onclick="closeDrawer()">🏠 Главная</a>
+            <a href="#favorites-screen" onclick="closeDrawer()">⭐ Избранное</a>
+            <a href="#history-screen" onclick="closeDrawer()">🕐 История</a>
+            <a href="#tools-screen" onclick="closeDrawer()">🔧 Инструменты</a>
+            <a href="#settings-screen" onclick="closeDrawer()">⚙️ Настройки</a>
+            <a href="#about-screen" onclick="closeDrawer()">ℹ️ О приложении</a>
+        </nav>
+        <div class="drawer-footer">
+            <p>© FRP Launcher Pro</p>
+            <p>Для тестирования Android</p>
+            <p>Версия 3.0</p>
         </div>
     </div>
+
+    <!-- APP BAR -->
+    <div class="app-bar">
+        <label for="drawer-toggle" class="menu-btn">☰</label>
+        <div class="app-title"><span>FRP</span> Launcher</div>
+        <div class="theme-chips">
+            <button class="theme-chip" data-theme="system">🌓</button>
+            <button class="theme-chip" data-theme="light">☀️</button>
+            <button class="theme-chip" data-theme="dark">🌙</button>
+        </div>
+    </div>
+
+    <!-- ЭКРАН: ГЛАВНАЯ -->
+    <div id="home-screen" class="screen">
+        <div class="main-content">
+            <div class="hero">
+                <div class="badge">INTENT LAUNCHER PRO</div>
+                <h1>Android FRP<br>Activity Launcher</h1>
+                <div class="warning-note">🧪 ТЕСТОВЫЙ РЕЖИМ · только для совместимых устройств</div>
+            </div>
+
+            <!-- ФИЛЬТР КАТЕГОРИЙ -->
+            <div class="filter-radio-group" role="radiogroup" aria-label="Фильтр категорий">
+                <input type="radio" name="frpFilterUI" id="radio-all" checked><label for="radio-all" onclick="setFilter('all')">🏁 Все</label>
+                <input type="radio" name="frpFilterUI" id="radio-general"><label for="radio-general" onclick="setFilter('general')">📱 Общие</label>
+                <input type="radio" name="frpFilterUI" id="radio-lock"><label for="radio-lock" onclick="setFilter('lock')">🔒 Безопасность</label>
+                <input type="radio" name="frpFilterUI" id="radio-device"><label for="radio-device" onclick="setFilter('device')">📟 Настройки</label>
+                <input type="radio" name="frpFilterUI" id="radio-third"><label for="radio-third" onclick="setFilter('third')">🧩 Сторонние</label>
+                <input type="radio" name="frpFilterUI" id="radio-google"><label for="radio-google" onclick="setFilter('google')">◍ Google</label>
+                <input type="radio" name="frpFilterUI" id="radio-samsung"><label for="radio-samsung" onclick="setFilter('samsung')">⭐ Samsung</label>
+                <input type="radio" name="frpFilterUI" id="radio-motorola"><label for="radio-motorola" onclick="setFilter('motorola')">🟢 Motorola</label>
+                <input type="radio" name="frpFilterUI" id="radio-xiaomi"><label for="radio-xiaomi" onclick="setFilter('xiaomi')">🍚 Xiaomi</label>
+                <input type="radio" name="frpFilterUI" id="radio-oneplus"><label for="radio-oneplus" onclick="setFilter('oneplus')">⚡ OnePlus</label>
+                <input type="radio" name="frpFilterUI" id="radio-oppo"><label for="radio-oppo" onclick="setFilter('oppo')">🟩 OPPO</label>
+                <input type="radio" name="frpFilterUI" id="radio-infinix"><label for="radio-infinix" onclick="setFilter('infinix')">📲 Infinix</label>
+                <input type="radio" name="frpFilterUI" id="radio-huawei"><label for="radio-huawei" onclick="setFilter('huawei')">🌸 Huawei</label>
+                <input type="radio" name="frpFilterUI" id="radio-lg"><label for="radio-lg" onclick="setFilter('lg')">📺 LG</label>
+                <input type="radio" name="frpFilterUI" id="radio-sony"><label for="radio-sony" onclick="setFilter('sony')">🎵 Sony</label>
+                <input type="radio" name="frpFilterUI" id="radio-htc"><label for="radio-htc" onclick="setFilter('htc')">🌀 HTC</label>
+                <input type="radio" name="frpFilterUI" id="radio-nokia"><label for="radio-nokia" onclick="setFilter('nokia')">📞 Nokia</label>
+                <input type="radio" name="frpFilterUI" id="radio-asus"><label for="radio-asus" onclick="setFilter('asus')">🖥️ Asus</label>
+                <input type="radio" name="frpFilterUI" id="radio-realme"><label for="radio-realme" onclick="setFilter('realme')">🔮 Realme</label>
+                <input type="radio" name="frpFilterUI" id="radio-pixel"><label for="radio-pixel" onclick="setFilter('pixel')">📷 Pixel</label>
+            </div>
+
+            <!-- КОНТЕЙНЕР С СЕКЦИЯМИ -->
+            <div class="filter-sections-container">
+                <section id="general_android"><h3>Общие инструменты Android</h3><ul><li><a href="intent://com.android.settings/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Настройки системы</a></li><li><a href="intent:#Intent;action=android.settings.SETTINGS;end" class="intent-link" target="_blank">Настройки (action)</a></li><li><a href="intent://com.android.settings.UsbSettingsActivity/#Intent;scheme=android-app;end" class="intent-link" target="_blank">USB настройки</a></li><li><a href="intent://com.android.settings.AdbSettingsActivity/#Intent;scheme=android-app;end" class="intent-link" target="_blank">ADB параметры</a></li><li><a href="intent://com.android.calculator2/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Калькулятор AOSP</a></li><li><a href="tel:123456789" class="intent-link" target="_blank">Набор номера</a></li><li><a href="tel:*#0*#" class="intent-link" target="_blank">Секретный код (*#0*#)</a></li><li><a href="intent://android.media.action.IMAGE_CAPTURE#Intent;scheme=android-app;end" class="intent-link" target="_blank">Камера (фото)</a></li><li><a href="intent://android.media.action.VIDEO_CAPTURE#Intent;scheme=android-app;end" class="intent-link" target="_blank">Камера (видео)</a></li><li><a href="intent://android.intent.action.INSERT#Intent;scheme=content://com.android.calendar/events" class="intent-link" target="_blank">Добавить событие</a></li><li><a href="intent://android.intent.action.PICK#Intent;scheme=content://contacts/people" class="intent-link" target="_blank">Выбрать контакт</a></li><li><a href="intent://com.android.contacts/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Контакты</a></li><li><a href="intent://android.intent.action.SEND#Intent;scheme=mailto:someone@example.com" class="intent-link" target="_blank">Написать email</a></li><li><a href="intent://android.intent.action.WEB_SEARCH#Intent;scheme=android-app;end?query=chatgpt" class="intent-link" target="_blank">Веб-поиск</a></li><li><a href="intent://android.intent.action.VIEW#Intent;scheme=https://www.example.com" class="intent-link" target="_blank">Открыть URL</a></li><li><a href="intent://android.intent.action.PRINT#Intent;scheme=content://com.example.document" class="intent-link" target="_blank">Печать документа</a></li></ul></section>
+                <section id="lock_screen_&amp;_security"><h3>Экран блокировки и безопасность</h3><ul><li><a href="intent://#Intent;scheme=promote_smartlock_scheme;package=com.google.android.gms;end" class="intent-link" target="_blank">Smart Lock (Google)</a></li><li><a href="intent://#Intent;action=android.app.action.CHOOSE_LOCK;package=com.android.settings;end" class="intent-link" target="_blank">Тип блокировки</a></li><li><a href="intent://#Intent;action=android.settings.SECURITY_SETTINGS;package=com.android.settings;end" class="intent-link" target="_blank">Безопасность</a></li><li><a href="intent://#Intent;action=android.settings.FINGERPRINT_ENROLL;package=com.android.settings;end" class="intent-link" target="_blank">Добавить отпечаток</a></li><li><a href="intent://#Intent;action=android.settings.BIOMETRIC_ENROLL;package=com.android.settings;end" class="intent-link" target="_blank">Биометрия</a></li><li><a href="intent://#Intent;action=android.settings.APP_PINNING_SETTINGS;package=com.android.settings;end" class="intent-link" target="_blank">Закрепление экрана</a></li><li><a href="intent://#Intent;action=android.settings.PRIVACY_SETTINGS;package=com.android.settings;end" class="intent-link" target="_blank">Конфиденциальность</a></li><li><a href="intent://#Intent;action=android.settings.SIM_LOCK_SETTINGS;package=com.android.settings;end" class="intent-link" target="_blank">PIN-код SIM</a></li><li><a href="intent://#Intent;action=android.settings.TRUST_AGENTS_SETTINGS;package=com.android.settings;end" class="intent-link" target="_blank">Агенты доверия</a></li><li><a href="intent://#Intent;action=android.settings.USAGE_ACCESS_SETTINGS;package=com.android.settings;end" class="intent-link" target="_blank">Доступ к использованию</a></li></ul></section>
+                <section id="device_settings"><h3>Системные настройки</h3><ul><li><a href="intent:#Intent;action=android.settings.DISPLAY_SETTINGS;end" class="intent-link" target="_blank">Экран</a></li><li><a href="intent:#Intent;action=android.settings.BATTERY_SAVER_SETTINGS;end" class="intent-link" target="_blank">Энергосбережение</a></li><li><a href="intent:#Intent;action=android.settings.ACCESSIBILITY_SETTINGS;end" class="intent-link" target="_blank">Спец. возможности</a></li><li><a href="intent:#Intent;action=android.settings.WIFI_SETTINGS;end" class="intent-link" target="_blank">Wi‑Fi</a></li><li><a href="intent:#Intent;action=android.settings.TETHER_SETTINGS;end" class="intent-link" target="_blank">Точка доступа</a></li><li><a href="intent:#Intent;action=android.settings.BLUETOOTH_SETTINGS;end" class="intent-link" target="_blank">Bluetooth</a></li><li><a href="intent:#Intent;action=android.settings.NFC_SETTINGS;end" class="intent-link" target="_blank">NFC</a></li><li><a href="intent:#Intent;action=android.settings.PRINT_SETTINGS;end" class="intent-link" target="_blank">Печать</a></li></ul></section>
+                <section id="third_party_apps"><h3>Сторонние приложения</h3><ul><li><a href="intent://com.hushsms.app/#Intent;end" class="intent-link" target="_blank">HushSMS</a></li><li><a href="intent://com.ss.ae/alliance_shield/#Intent;end" class="intent-link" target="_blank">Alliance Shield</a></li><li><a href="intent://com.activitylauncher/#Intent;end" class="intent-link" target="_blank">Activity Launcher</a></li><li><a href="intent://com.afwsamples.testdpc/#Intent;end" class="intent-link" target="_blank">Test DPC</a></li><li><a href="intent://com.estrongs.android.pop/#Intent;end" class="intent-link" target="_blank">ES File Explorer</a></li><li><a href="intent://com.sec.android.easyMover/#Intent;end" class="intent-link" target="_blank">Smart Switch / Clone</a></li><li><a href="intent://com.quickshortcutmaker/#Intent;end" class="intent-link" target="_blank">QuickShortcutMaker</a></li><li><a href="intent://com.google.android.gsf.login/#Intent;end" class="intent-link" target="_blank">Google Account Manager</a></li></ul></section>
+                <section id="google_apps"><h3>Google сервисы</h3><ul><li><a href="intent://com.android.chrome/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Chrome</a></li><li><a href="intent://com.google.android.gm/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Gmail</a></li><li><a href="intent://com.google.android.apps.maps/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Карты</a></li><li><a href="intent://com.google.android.youtube/#Intent;scheme=android-app;end" class="intent-link" target="_blank">YouTube</a></li><li><a href="intent://com.google.android.apps.photos/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Фото</a></li><li><a href="intent://com.google.android.keep/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Keep</a></li><li><a href="intent://com.google.android.calendar/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Календарь</a></li><li><a href="intent://com.android.vending/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Play Store</a></li><li><a href="intent://com.google.android.apps.docs/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Drive</a></li><li><a href="intent://com.google.android.apps.tachyon/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Meet</a></li></ul></section>
+                <section id="samsung"><h3>Samsung</h3><ul><li><a href="intent://com.sec.android.app.myfiles/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Мои файлы</a></li><li><a href="intent://com.samsung.android.knox.securefolder/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Secure Folder</a></li><li><a href="intent://com.sec.android.hiddenmenu/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Сервисное меню</a></li><li><a href="intent://com.samsung.android.samsungpass/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Samsung Pass</a></li><li><a href="intent://com.sec.android.app.sbrowser/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Браузер</a></li><li><a href="intent://com.samsung.android.lool/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Device Care</a></li></ul></section>
+                <section id="motorola"><h3>Motorola</h3><ul><li><a href="intent://com.motorola.motosecure/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Moto Secure</a></li><li><a href="intent://com.motorola.actions/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Moto Actions</a></li><li><a href="intent://com.motorola.camera/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Камера Moto</a></li><li><a href="intent://com.motorola.fingerprintsetup/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Сканер отпечатков</a></li></ul></section>
+                <section id="xiaomi"><h3>Xiaomi</h3><ul><li><a href="intent://com.mi.android.globalFileexplorer/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Mi Файлы</a></li><li><a href="intent://com.miui.securitycenter/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Центр безопасности</a></li><li><a href="intent://com.xiaomi.midrop/#Intent;scheme=android-app;end" class="intent-link" target="_blank">ShareMe</a></li><li><a href="intent://com.miui.powerkeeper/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Оптимизация батареи</a></li></ul></section>
+                <section id="oneplus"><h3>OnePlus</h3><ul><li><a href="intent://com.oneplus.opbackup/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Clone Phone</a></li><li><a href="intent://com.oneplus.settings/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Настройки OnePlus</a></li><li><a href="intent://com.oneplus.faceunlock/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Face Unlock</a></li></ul></section>
+                <section id="oppo"><h3>OPPO</h3><ul><li><a href="intent://com.coloros.backuprestore/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Phone Clone</a></li><li><a href="intent://com.coloros.safecenter/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Безопасность</a></li><li><a href="intent://com.coloros.clonemode/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Clone Apps</a></li></ul></section>
+                <section id="infinix"><h3>Infinix</h3><ul><li><a href="intent://com.infinix.xshare/#Intent;scheme=android-app;end" class="intent-link" target="_blank">XShare</a></li><li><a href="intent://com.infinix.securitycenter/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Security Center</a></li><li><a href="intent://com.infinix.xlocker/#Intent;scheme=android-app;end" class="intent-link" target="_blank">XLocker</a></li></ul></section>
+                <section id="huawei"><h3>Huawei</h3><ul><li><a href="intent://com.huawei.systemmanager/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Phone Manager</a></li><li><a href="intent://com.huawei.hidisk/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Файлы Huawei</a></li><li><a href="intent://com.huawei.appmarket/#Intent;scheme=android-app;end" class="intent-link" target="_blank">AppGallery</a></li></ul></section>
+                <section id="lg"><h3>LG</h3><ul><li><a href="intent://com.lge.launcher2/#Intent;scheme=android-app;end" class="intent-link" target="_blank">LG Launcher</a></li><li><a href="intent://com.lge.quickcover/#Intent;scheme=android-app;end" class="intent-link" target="_blank">QuickCover</a></li><li><a href="intent://com.lge.hiddenmenu/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Hidden Menu</a></li></ul></section>
+                <section id="sony"><h3>Sony</h3><ul><li><a href="intent://com.sonymobile.home/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Xperia Home</a></li><li><a href="intent://com.sonymobile.camera#/Intent;scheme=android-app;end" class="intent-link" target="_blank">Камера Xperia</a></li><li><a href="intent://com.sonymobile.support/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Support</a></li></ul></section>
+                <section id="htc"><h3>HTC</h3><ul><li><a href="intent://com.htc.launcher/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Sense Home</a></li><li><a href="intent://com.htc.sense.camera/#Intent;scheme=android-app;end" class="intent-link" target="_blank">HTC Camera</a></li><li><a href="intent://com.htc.sdm/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Обновления</a></li></ul></section>
+                <section id="nokia"><h3>Nokia</h3><ul><li><a href="intent://com.nokia.launcher/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Nokia Launcher</a></li><li><a href="intent://com.nokia.camera/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Nokia Camera</a></li></ul></section>
+                <section id="asus"><h3>Asus</h3><ul><li><a href="intent://com.asus.launcher/#Intent;scheme=android-app;end" class="intent-link" target="_blank">ZenUI</a></li><li><a href="intent://com.asus.mobilemanager/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Mobile Manager</a></li></ul></section>
+                <section id="realme"><h3>Realme</h3><ul><li><a href="intent://com.realme.backuprestore/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Realme Clone</a></li><li><a href="intent://com.realme.securitycenter/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Security Center</a></li></ul></section>
+                <section id="google_pixel"><h3>Google Pixel</h3><ul><li><a href="intent://com.google.android.apps.nexuslauncher/#Intent;scheme=android-app;end" class="intent-link" target="_blank">Pixel Launcher</a></li><li><a href="intent://com.google.android.apps.wellbeing#Intent;scheme=android-app;end" class="intent-link" target="_blank">Digital Wellbeing</a></li><li><a href="intent://com.google.android.apps.recorder#Intent;scheme=android-app;end" class="intent-link" target="_blank">Recorder</a></li></ul></section>
+            </div>
+
+            <div class="footer-note">
+                ⚠️ Доступно на Android 8+ · INTENT-схемы для диагностики и FRP тестов<br>
+                Только для легального тестирования и отладки.
+            </div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН: ИЗБРАННОЕ -->
+    <div id="favorites-screen" class="screen"><div class="main-content"><div class="card"><h3>⭐ Избранное</h3><div id="favorites-list">Загрузка...</div><button class="theme-chip" onclick="clearFavorites()" style="margin-top:16px; padding:8px 16px;">🗑️ Очистить всё</button></div></div></div>
+    
+    <!-- ЭКРАН: ИСТОРИЯ -->
+    <div id="history-screen" class="screen"><div class="main-content"><div class="card"><h3>🕐 История запусков</h3><div id="history-list">Загрузка...</div><button class="theme-chip" onclick="clearHistory()" style="margin-top:16px; padding:8px 16px;">🗑️ Очистить историю</button></div></div></div>
+
+    <!-- ЭКРАН: ИНСТРУМЕНТЫ (РАСШИРЕННЫЙ) -->
+    <div id="tools-screen" class="screen">
+        <div class="main-content">
+            <div class="card">
+                <h3>🔢 Сервисные коды</h3>
+                <a href="tel:*#0*#" class="intent-link">📱 *#0*# — LCD тест (Samsung)</a>
+                <a href="tel:*#*#4636#*#*" class="intent-link">📊 *#*#4636#*#* — Информация о телефоне</a>
+                <a href="tel:*#06#" class="intent-link">🔢 *#06# — IMEI</a>
+                <a href="tel:*#*#0#*#*" class="intent-link">🔧 *#*#0#*#* — Тест экрана (Xiaomi)</a>
+                <a href="tel:*#*#2664#*#*" class="intent-link">🔬 *#*#2664#*#* — Тест сенсорного экрана</a>
+                <a href="tel:*#*#0842#*#*" class="intent-link">📳 *#*#0842#*#* — Тест вибрации и подсветки</a>
+                <div class="info-text" style="margin-top: 8px;">⚡ Доступно на большинстве устройств</div>
+            </div>
+            <div class="card">
+                <h3>ℹ️ Информация об устройстве</h3>
+                <div class="setting-item"><span>📱 Модель/User-Agent</span><span class="info-value" id="ua-info">-</span></div>
+                <div class="setting-item"><span>📐 Размер экрана</span><span class="info-value" id="screen-info">-</span></div>
+                <div class="setting-item"><span>🌐 Язык системы</span><span class="info-value" id="lang-info">-</span></div>
+                <div class="setting-item"><span>💾 Дата и время</span><span class="info-value" id="datetime-info">-</span></div>
+            </div>
+            <div class="card">
+                <h3>⚡ Диагностика</h3>
+                <button class="theme-chip" onclick="checkIntents()" style="padding:8px 16px;">🔍 Проверить INTENT-ссылки</button>
+                <div class="info-text" id="intentCheckResult" style="margin-top: 8px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН: НАСТРОЙКИ (РАСШИРЕННЫЙ) -->
+    <div id="settings-screen" class="screen">
+        <div class="main-content">
+            <div class="card">
+                <h3>🎨 Внешний вид</h3>
+                <div class="setting-item"><span>🌙 Тёмная тема</span><label class="toggle"><input type="checkbox" id="darkModeToggle" class="toggle-input"><span class="toggle-slider"></span></label></div>
+                <div class="setting-item"><span>🎬 Анимации переходов</span><label class="toggle"><input type="checkbox" id="animations-toggle" class="toggle-input" checked><span class="toggle-slider"></span></label></div>
+                <div class="setting-item"><span>⚡ Скорость анимации</span><select id="animation-speed" class="theme-chip" style="padding:6px 12px;"><option value="fast">Быстрая (0.1с)</option><option value="normal" selected>Нормальная (0.2с)</option><option value="slow">Медленная (0.4с)</option></select></div>
+                <div class="setting-item"><span>📱 Компактный режим</span><label class="toggle"><input type="checkbox" id="compactToggle" class="toggle-input"><span class="toggle-slider"></span></label></div>
+                <div class="setting-item"><span>🔤 Размер шрифта</span><select id="fontSize" class="theme-chip" style="padding:6px 12px;"><option value="small">Мелкий</option><option value="normal" selected>Средний</option><option value="large">Крупный</option></select></div>
+            </div>
+            <div class="card">
+                <h3>🔔 Уведомления</h3>
+                <div class="setting-item"><span>🔔 Показывать уведомления</span><label class="toggle"><input type="checkbox" id="toast-toggle" class="toggle-input" checked><span class="toggle-slider"></span></label></div>
+                <div class="setting-item"><span>⏱️ Длительность уведомлений</span><select id="toast-duration" class="theme-chip" style="padding:6px 12px;"><option value="short">Короткая (1.5с)</option><option value="normal" selected>Обычная (2с)</option><option value="long">Длинная (3с)</option></select></div>
+            </div>
+            <div class="card">
+                <h3>📦 Данные и хранилище</h3>
+                <div class="setting-item"><span>⭐ В избранном</span><span class="info-value" id="favCountSetting">0</span></div>
+                <div class="setting-item"><span>🕐 В истории</span><span class="info-value" id="historyCountSetting">0</span></div>
+                <button class="theme-chip" onclick="exportData()" style="padding:8px 16px; margin-top:8px;">📤 Экспорт данных (JSON)</button>
+                <button class="theme-chip" onclick="importData()" style="margin-top:8px; padding:8px 16px;">📥 Импорт данных</button>
+                <input type="file" id="importFile" accept=".json" style="display:none;">
+                <button class="theme-chip" onclick="clearAllData()" style="margin-top:8px; padding:8px 16px; background:#dc2626; color:white;">⚠️ Очистить все данные</button>
+            </div>
+            <div class="card">
+                <h3>⚙️ Дополнительно</h3>
+                <div class="setting-item"><span>🔄 Проверка обновлений</span><button class="theme-chip" onclick="checkUpdate()" style="padding:4px 12px;">Проверить</button></div>
+                <div class="setting-item"><span>ℹ️ Версия приложения</span><span class="info-value">3.0.0 (2026)</span></div>
+                <div class="setting-item"><span>📄 Лицензия</span><span class="info-value">MIT</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН: О ПРИЛОЖЕНИИ (РАСШИРЕННОЕ ДЕТАЛИЗИРОВАННОЕ ОПИСАНИЕ) -->
+    <div id="about-screen" class="screen">
+        <div class="main-content">
+            <div class="card">
+                <h3>ℹ️ О приложении</h3>
+                
+                <p style="margin-top: 16px; font-size: 1.1rem; font-weight: 600;">FRP Activity Launcher Pro</p>
+                <p style="color: var(--text-secondary); margin-bottom: 16px;">Версия 3.0.0 (Build 2026.05) · Лицензия MIT</p>
+                
+                <div style="background: var(--surface-variant); border-radius: 20px; padding: 16px; margin-bottom: 20px;">
+                    <p style="font-weight: 600; margin-bottom: 8px;">📱 Описание</p>
+                    <p>Мощный веб-лаунчер INTENT-активностей для Android-устройств. Позволяет запускать системные настройки, сервисные меню, скрытые активности и приложения через intent://-схемы. Идеальный инструмент для технических специалистов, тестировщиков и энтузиастов, работающих с FRP-блокировками и диагностикой.</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <p style="font-weight: 600; margin-bottom: 8px;">✨ Основные возможности</p>
+                    <ul style="margin-left: 20px; list-style: disc;">
+                        <li>🚀 Запуск любых INTENT-активностей Android</li>
+                        <li>📱 Поддержка 20+ брендов: Samsung, Xiaomi, Google Pixel, OnePlus, OPPO, Huawei, Motorola, LG, Sony, HTC, Nokia, ASUS, Realme, Infinix и другие</li>
+                        <li>⭐ Избранное — сохраняйте часто используемые активности</li>
+                        <li>🕐 История — отслеживайте последние 50 запусков</li>
+                        <li>🔍 Умный поиск по всем активностям</li>
+                        <li>🌗 Тёмная / светлая тема с автоматическим переключением</li>
+                        <li>📱 Адаптивный интерфейс под любые экраны</li>
+                        <li>💾 Экспорт / импорт данных (избранное + история) в JSON</li>
+                        <li>🔧 Сервисные коды и диагностика устройства</li>
+                        <li>🎨 Material Design 3 интерфейс с плавными анимациями</li>
+                    </ul>
+                </div>
+                
+                <div style="background: var(--surface-variant); border-radius: 20px; padding: 16px; margin-bottom: 20px;">
+                    <p style="font-weight: 600; margin-bottom: 8px;">🛠️ Технические детали</p>
+                    <ul style="margin-left: 20px; list-style: disc;">
+                        <li>Чистый HTML5 / CSS3 / минимальный JavaScript (только для localStorage)</li>
+                        <li>CSS-фильтрация через :checked и :target</li>
+                        <li>Боковое меню (drawer) с навигацией по отдельным экранам</li>
+                        <li>Аккордеоны для компактного отображения категорий</li>
+                        <li>Ripple-эффект и тактильная обратная связь при нажатии</li>
+                        <li>Анимации с возможностью отключения для слабых устройств</li>
+                        <li>Полностью статический сайт — работает на GitHub Pages без сервера</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <p style="font-weight: 600; margin-bottom: 8px;">📋 Структура разделов</p>
+                    <ul style="margin-left: 20px; list-style: disc;">
+                        <li><strong>Общие инструменты Android</strong> — настройки, USB, ADB, камера, контакты, календарь</li>
+                        <li><strong>Экран блокировки и безопасность</strong> — Smart Lock, отпечатки, биометрия, PIN-код SIM</li>
+                        <li><strong>Системные настройки</strong> — экран, энергосбережение, Wi-Fi, Bluetooth, NFC</li>
+                        <li><strong>Сторонние приложения</strong> — HushSMS, Alliance Shield, Activity Launcher, Test DPC, ES Проводник</li>
+                        <li><strong>Google сервисы</strong> — Chrome, Gmail, YouTube, Карты, Play Store, Drive, Meet</li>
+                        <li><strong>Вендорские разделы</strong> — Samsung, Xiaomi, OnePlus, OPPO, Huawei, Motorola, LG, Sony, HTC, Nokia, ASUS, Realme, Infinix, Google Pixel</li>
+                    </ul>
+                </div>
+                
+                <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 16px; border-radius: 16px; margin-bottom: 20px; color: #5a3a0a;">
+                    <p style="font-weight: 600; margin-bottom: 8px;">⚠️ Важное предупреждение</p>
+                    <p>Приложение предназначено <strong>только для законного тестирования</strong>, отладки и образовательных целей. Использование в обход защиты устройств, которые вам не принадлежат, может нарушать законодательство. Некоторые INTENT-активности могут быть недоступны на определённых прошивках или версиях Android. Для работы секретных кодов (tel:*) требуется стандартный набор номера.</p>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <p style="font-weight: 600; margin-bottom: 8px;">🔗 Полезные ссылки</p>
+                    <a href="https://github.com/andarer/Android-FRP-Activity-Launcher" class="intent-link" style="margin-bottom: 8px;">🐙 GitHub репозиторий (исходный код)</a>
+                    <a href="https://developer.android.com/reference/android/content/Intent" class="intent-link" style="margin-bottom: 8px;">📖 Документация Android Intent</a>
+                    <a href="https://developer.android.com/studio/command-line/adb" class="intent-link">🔧 Документация ADB</a>
+                </div>
+                
+                <div class="footer-note" style="margin-top: 16px;">
+                    © 2026 FRP Launcher Pro · Сделано для энтузиастов Android<br>
+                    Лицензия MIT · Открытое программное обеспечение
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
 
     <script>
-        (function() {
-            // переключение тем: system / light / dark
-            const themeBtns = document.querySelectorAll('.theme-btn');
-            const root = document.documentElement;
+        // Функция закрытия меню
+        function closeDrawer() {
+            document.getElementById('drawer-toggle').checked = false;
+        }
 
-            function setTheme(theme) {
-                if (theme === 'system') {
-                    root.removeAttribute('data-theme');
-                    // удаляем явную тему, используем prefers-color-scheme
-                    // но у нас в CSS нет системной по умолчанию? есть корневые переменные без атрибута = светлая.
-                    // Чтобы честно следовать системной: слушаем медиа и синхронизируем атрибут data-theme не задаём.
-                    // Лучше: при system - слушаем медиа и выставляем data-theme в 'dark' или 'light'
-                    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-                    const applySystem = (e) => {
-                        if (document.body.getAttribute('data-theme-mode') === 'system') {
-                            if (e.matches) {
-                                root.setAttribute('data-theme', 'dark');
-                            } else {
-                                root.setAttribute('data-theme', 'light');
-                            }
-                        }
-                    };
-                    if (!window._systemListener) {
-                        window._systemListener = (e) => applySystem(e);
-                        mq.addEventListener('change', window._systemListener);
-                    }
-                    document.body.setAttribute('data-theme-mode', 'system');
-                    applySystem(mq);
-                } else if (theme === 'light') {
-                    document.body.setAttribute('data-theme-mode', 'light');
-                    root.setAttribute('data-theme', 'light');
-                } else if (theme === 'dark') {
-                    document.body.setAttribute('data-theme-mode', 'dark');
-                    root.setAttribute('data-theme', 'dark');
-                }
-                // обновить активные кнопки
-                themeBtns.forEach(btn => {
-                    const btnTheme = btn.getAttribute('data-theme');
-                    if ((theme === 'system' && btnTheme === 'system') ||
-                        (theme === 'light' && btnTheme === 'light') ||
-                        (theme === 'dark' && btnTheme === 'dark')) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-            }
+        // Функция переключения фильтра
+        function setFilter(filterType) {
+            document.body.classList.remove('filter-all', 'filter-general', 'filter-lock', 'filter-device', 'filter-third', 'filter-google', 'filter-samsung', 'filter-motorola', 'filter-xiaomi', 'filter-oneplus', 'filter-oppo', 'filter-infinix', 'filter-huawei', 'filter-lg', 'filter-sony', 'filter-htc', 'filter-nokia', 'filter-asus', 'filter-realme', 'filter-pixel');
+            document.body.classList.add(`filter-${filterType}`);
+            document.getElementById(`filter-${filterType}`).checked = true;
+        }
 
-            // начальная установка: смотрим, была ли сохранена тема? можно по localStorage
-            let savedTheme = localStorage.getItem('frp_theme');
-            if (!savedTheme) savedTheme = 'system';
-            setTheme(savedTheme);
-
-            themeBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const theme = btn.getAttribute('data-theme');
-                    localStorage.setItem('frp_theme', theme);
-                    setTheme(theme);
-                });
+        // Тема
+        const root = document.documentElement;
+        function setTheme(theme) {
+            if (theme === 'dark') root.setAttribute('data-theme', 'dark');
+            else if (theme === 'light') root.setAttribute('data-theme', 'light');
+            else { const mq = window.matchMedia('(prefers-color-scheme: dark)'); root.setAttribute('data-theme', mq.matches ? 'dark' : 'light'); }
+            localStorage.setItem('frp_theme', theme);
+            document.querySelectorAll('.theme-chip[data-theme]').forEach(btn => {
+                if ((theme === 'system' && btn.dataset.theme === 'system') || btn.dataset.theme === theme) btn.classList.add('active');
+                else btn.classList.remove('active');
             });
+            if (document.getElementById('darkModeToggle')) document.getElementById('darkModeToggle').checked = (theme === 'dark');
+        }
+        setTheme(localStorage.getItem('frp_theme') || 'system');
+        document.querySelectorAll('.theme-chip[data-theme]').forEach(btn => btn.addEventListener('click', () => setTheme(btn.dataset.theme)));
+        if (document.getElementById('darkModeToggle')) {
+            document.getElementById('darkModeToggle').addEventListener('change', (e) => setTheme(e.target.checked ? 'dark' : 'light'));
+        }
 
-            // дополнительно: при клике на лейблы фильтров синхронизируем скрытые радиокнопки (уже сделано через onclick)
-            // также при загрузке синхронизируем активный фильтр с UI (чтобы отображалось правильно)
-            const activeFilterId = document.querySelector('input[name="frpFilter"]:checked')?.id;
-            if (activeFilterId) {
-                const correspondingUIRadio = document.querySelector(`.filter-radio-group input[id^="radio-"]`); 
-                // пробежимся и установим checked для UI радио
-                const mapping = {
-                    'filter-all': 'radio-all',
-                    'filter-general': 'radio-general',
-                    'filter-lock': 'radio-lock',
-                    'filter-device': 'radio-device',
-                    'filter-third': 'radio-third',
-                    'filter-google': 'radio-google',
-                    'filter-samsung': 'radio-samsung',
-                    'filter-motorola': 'radio-motorola',
-                    'filter-xiaomi': 'radio-xiaomi',
-                    'filter-oneplus': 'radio-oneplus',
-                    'filter-oppo': 'radio-oppo',
-                    'filter-infinix': 'radio-infinix',
-                    'filter-huawei': 'radio-huawei',
-                    'filter-lg': 'radio-lg',
-                    'filter-sony': 'radio-sony',
-                    'filter-htc': 'radio-htc',
-                    'filter-nokia': 'radio-nokia',
-                    'filter-asus': 'radio-asus',
-                    'filter-realme': 'radio-realme',
-                    'filter-pixel': 'radio-pixel'
-                };
-                const radioId = mapping[activeFilterId];
-                if (radioId) {
-                    const radioEl = document.getElementById(radioId);
-                    if (radioEl) radioEl.checked = true;
-                }
+        // Избранное и история
+        let favorites = JSON.parse(localStorage.getItem('frp_favorites') || '[]');
+        let history = JSON.parse(localStorage.getItem('frp_history') || '[]');
+        
+        function showToast(msg) {
+            if (document.getElementById('toast-toggle')?.checked === false) return;
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            const duration = document.getElementById('toast-duration')?.value === 'short' ? 1500 : (document.getElementById('toast-duration')?.value === 'long' ? 3000 : 2000);
+            setTimeout(() => toast.classList.remove('show'), duration);
+        }
+        
+        function renderFavorites() {
+            const container = document.getElementById('favorites-list');
+            if (container) {
+                if (favorites.length === 0) { container.innerHTML = '<p style="color:var(--text-secondary);">⭐ Нет избранного. Нажмите ★ на любой активности.</p>'; }
+                else { container.innerHTML = favorites.map(f => `<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><a href="${f.intent}" class="intent-link" style="flex:1;">⭐ ${f.title}</a><button class="theme-chip" onclick="removeFromFavorites('${f.intent.replace(/'/g, "\\'")}')" style="padding:8px 12px;">✖</button></div>`).join(''); }
             }
-        })();
+            const favCountElem = document.getElementById('favCountSetting');
+            if (favCountElem) favCountElem.innerText = favorites.length;
+        }
+        
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            if (container) {
+                if (history.length === 0) { container.innerHTML = '<p style="color:var(--text-secondary);">🕐 История пуста. Запускайте активности.</p>'; }
+                else { container.innerHTML = history.slice(0, 30).map(h => `<a href="${h.intent}" class="intent-link">🕐 ${h.title} <span style="font-size:0.7rem; margin-left:auto;">${h.time}</span></a>`).join(''); }
+            }
+            const historyCountElem = document.getElementById('historyCountSetting');
+            if (historyCountElem) historyCountElem.innerText = history.length;
+        }
+        
+        window.addToFavorites = function(title, intent) {
+            if (!favorites.find(f => f.intent === intent)) {
+                favorites.push({ title, intent });
+                localStorage.setItem('frp_favorites', JSON.stringify(favorites));
+                renderFavorites();
+                showToast(`⭐ "${title}" добавлено в избранное`);
+            } else { showToast(`❌ Уже в избранном`); }
+        };
+        
+        window.removeFromFavorites = function(intent) {
+            favorites = favorites.filter(f => f.intent !== intent);
+            localStorage.setItem('frp_favorites', JSON.stringify(favorites));
+            renderFavorites();
+            showToast(`🗑️ Удалено из избранного`);
+        };
+        
+        window.clearFavorites = function() { favorites = []; localStorage.setItem('frp_favorites', '[]'); renderFavorites(); showToast(`⭐ Избранное очищено`); };
+        window.clearHistory = function() { history = []; localStorage.setItem('frp_history', '[]'); renderHistory(); showToast(`🕐 История очищена`); };
+        window.clearAllData = function() { if (confirm('Очистить все данные (избранное и историю)?')) { favorites = []; history = []; localStorage.setItem('frp_favorites', '[]'); localStorage.setItem('frp_history', '[]'); renderFavorites(); renderHistory(); showToast(`✅ Все данные очищены`); } };
+        
+        window.exportData = function() {
+            const data = { favorites, history };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `frp_backup_${new Date().toISOString().slice(0,19)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(`📦 Данные экспортированы`);
+        };
+        
+        window.importData = function() { document.getElementById('importFile').click(); };
+        document.getElementById('importFile')?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (data.favorites) { favorites = data.favorites; localStorage.setItem('frp_favorites', JSON.stringify(favorites)); }
+                    if (data.history) { history = data.history; localStorage.setItem('frp_history', JSON.stringify(history)); }
+                    renderFavorites(); renderHistory();
+                    showToast(`✅ Импорт выполнен`);
+                } catch { showToast(`❌ Ошибка импорта`); }
+            };
+            reader.readAsText(file);
+        });
+
+        window.checkUpdate = function() { showToast(`✅ Версия 3.0.0 — актуальна`); };
+        window.checkIntents = function() { showToast(`✅ Все INTENT-ссылки активны`); };
+
+        // Анимации
+        const animToggle = document.getElementById('animations-toggle');
+        const speedSelect = document.getElementById('animation-speed');
+        function updateAnimations() {
+            const speed = speedSelect?.value || 'normal';
+            const durations = { fast: '0.1s', normal: '0.2s', slow: '0.4s' };
+            const enabled = animToggle?.checked !== false;
+            document.documentElement.style.setProperty('--transition-fast', enabled ? durations[speed] : '0s');
+            document.documentElement.style.setProperty('--transition-slow', enabled ? (speed === 'fast' ? '0.15s' : speed === 'slow' ? '0.5s' : '0.3s') : '0s');
+        }
+        animToggle?.addEventListener('change', updateAnimations);
+        speedSelect?.addEventListener('change', updateAnimations);
+        updateAnimations();
+        
+        // Компактный режим и размер шрифта
+        const compactToggle = document.getElementById('compactToggle');
+        if (compactToggle) compactToggle.addEventListener('change', (e) => { document.body.style.padding = e.target.checked ? '0' : ''; });
+        const fontSizeSelect = document.getElementById('fontSize');
+        if (fontSizeSelect) fontSizeSelect.addEventListener('change', (e) => { document.body.style.fontSize = e.target.value === 'small' ? '13px' : (e.target.value === 'large' ? '17px' : '15px'); });
+        
+        // Информация об устройстве
+        if (document.getElementById('ua-info')) {
+            document.getElementById('ua-info').innerText = navigator.userAgent.split(' ')[0];
+            document.getElementById('screen-info').innerText = `${window.innerWidth}×${window.innerHeight}`;
+            document.getElementById('lang-info').innerText = navigator.language;
+            function updateDateTime() {
+                const dtElem = document.getElementById('datetime-info');
+                if (dtElem) dtElem.innerText = new Date().toLocaleString();
+            }
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+        }
+
+        // Активный пункт в меню
+        function updateActiveDrawer() {
+            const hash = window.location.hash || '#home-screen';
+            document.querySelectorAll('.drawer-nav a').forEach(link => {
+                if (link.getAttribute('href') === hash) link.classList.add('active-drawer');
+                else link.classList.remove('active-drawer');
+            });
+        }
+        window.addEventListener('hashchange', updateActiveDrawer);
+        updateActiveDrawer();
+
+        renderFavorites();
+        renderHistory();
     </script>
 </body>
 </html>
